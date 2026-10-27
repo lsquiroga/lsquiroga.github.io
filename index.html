@@ -1,1727 +1,618 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-<base target="_top">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sistema Ansilta</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&display=swap" rel="stylesheet">
-<style>
-:root{
-  --pino:#153B2E; --musgo:#2F6B4F; --musgo-claro:#DCE9E0; --dorado:#E0A526;
-  --lienzo:#EDF1EC; --superficie:#fff; --tinta:#17231D; --tinta-2:#4B5B52;
-  --borde:#D3DCD5; --borde-campo:#7C9185; --peligro:#B3321F; --peligro-fondo:#F9E4E0; --info:#1B5E9C;
-}
-*{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;font-family:'Atkinson Hyperlegible',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:16px;line-height:1.5;background:var(--lienzo);color:var(--tinta)}
-h1,h2,h3{font-family:'Bricolage Grotesque','Atkinson Hyperlegible',system-ui,sans-serif;letter-spacing:-.01em;line-height:1.15;margin:0}
-h1{font-size:clamp(1.6rem,3.2vw,2.2rem)}
-h2{font-size:1.2rem}
-h3{font-size:1rem}
-p{margin:0}
-small{font-size:.85rem}
-[hidden]{display:none!important}
-:focus-visible{outline:3px solid var(--info);outline-offset:2px}
-.lateral :focus-visible,.login-mapa :focus-visible{outline-color:var(--dorado)}
-.suave{color:var(--tinta-2)}
-.cargando{color:var(--tinta-2);padding:32px 0}
-
-/* Botones */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:0 1.1rem;border-radius:8px;border:1px solid var(--borde-campo);background:#fff;color:var(--tinta);font:700 .95rem 'Atkinson Hyperlegible',system-ui,sans-serif;cursor:pointer;text-decoration:none}
-.btn:hover{background:#F2F6F3}
-.btn:disabled{opacity:.55;cursor:not-allowed}
-.btn-primario{background:var(--musgo);border-color:var(--musgo);color:#fff}
-.btn-primario:hover{background:var(--pino);border-color:var(--pino)}
-.btn-peligro{color:var(--peligro);border-color:#D9A39A}
-.btn-peligro:hover{background:var(--peligro-fondo)}
-.btn-peligro-solido{background:var(--peligro);border-color:var(--peligro);color:#fff}
-.btn-peligro-solido:hover{background:#8E2616}
-.btn-fantasma{border-color:transparent;background:transparent}
-.btn-chico{min-height:36px;padding:0 .8rem;font-size:.88rem}
-.btn.ancho{width:100%}
-.enlace{background:none;border:0;padding:0;font:700 1rem 'Atkinson Hyperlegible',system-ui,sans-serif;color:var(--pino);text-align:left;cursor:pointer;text-decoration:underline;text-decoration-color:var(--borde);text-underline-offset:3px}
-.enlace:hover{text-decoration-color:var(--musgo)}
-.ico{flex:none}
-
-/* Campos */
-.campo{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
-label{font-weight:700;font-size:.92rem}
-.req{color:var(--peligro)}
-input,select,textarea{width:100%;min-height:44px;padding:9px 12px;border:1px solid var(--borde-campo);border-radius:8px;font:inherit;font-size:1rem;color:var(--tinta);background:#fff}
-textarea{resize:vertical;min-height:84px}
-input:disabled,select:disabled,textarea:disabled{background:#F1F4F2;color:var(--tinta);opacity:1;border-color:var(--borde)}
-[aria-invalid="true"]{border-color:var(--peligro);background:var(--peligro-fondo)}
-.ayuda{color:var(--tinta-2)}
-.error-campo{color:var(--peligro);font-weight:700}
-.msg-error{background:var(--peligro-fondo);color:#7A1F11;border:1px solid #E4B9B2;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-weight:700}
-.con-boton{display:flex;gap:6px}
-.con-boton input{flex:1}
-
-/* Login */
-#vista-login{min-height:100vh;display:grid;grid-template-columns:1.1fr 1fr}
-.login-mapa{position:relative;background:var(--pino);color:#fff;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:48px}
-.login-mapa svg#curvas{position:absolute;inset:0;width:100%;height:100%}
-#curvas path{fill:none;stroke:rgba(255,255,255,.17);stroke-width:1.2;stroke-dasharray:1;stroke-dashoffset:1;animation:trazo 2.4s ease-out forwards;animation-delay:calc(var(--i) * .13s)}
-#curvas path:nth-child(5n){stroke:rgba(224,165,38,.75);stroke-width:2}
-@keyframes trazo{to{stroke-dashoffset:0}}
-.login-texto{position:relative;display:flex;flex-direction:column;gap:22px}
-.login-texto h1{font-size:clamp(2rem,4vw,3.2rem);max-width:15ch;font-weight:700}
-.login-form{display:flex;align-items:center;justify-content:center;padding:32px;background:var(--lienzo)}
-.login-caja{width:100%;max-width:380px}
-.login-caja h2{font-size:1.7rem;margin-bottom:6px}
-.login-caja .suave{margin-bottom:22px}
-.marca{display:flex;align-items:center;gap:10px}
-.marca svg{color:#fff}
-.marca strong{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:1.05rem;display:block;line-height:1.2}
-.marca small{opacity:.75}
-.marca-grande{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:700;font-size:1.15rem}
-
-/* Estructura */
-#vista-app{min-height:100vh;display:grid;grid-template-columns:248px minmax(0,1fr)}
-.lateral{background:var(--pino);color:#E7EFE9;padding:20px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:22px}
-#nav{display:flex;flex-direction:column;gap:4px;flex:1}
-.nav-item{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border-radius:8px;border:0;background:none;color:inherit;font:700 .98rem 'Atkinson Hyperlegible',system-ui,sans-serif;cursor:pointer;text-align:left;position:relative}
-.nav-item:hover{background:rgba(255,255,255,.08)}
-.nav-item[aria-current="page"]{background:rgba(255,255,255,.12);color:#fff}
-.nav-item[aria-current="page"]::before{content:"";position:absolute;left:-14px;top:8px;bottom:8px;width:4px;border-radius:0 4px 4px 0;background:var(--dorado)}
-.usuario-caja{border-top:1px solid rgba(255,255,255,.15);padding-top:14px;display:flex;flex-direction:column;gap:10px}
-.usuario-caja small{display:block;opacity:.75}
-.usuario-acciones{display:flex;flex-direction:column;gap:2px}
-.btn-lateral{background:none;border:0;color:#E7EFE9;text-align:left;padding:8px 4px;font:400 .92rem 'Atkinson Hyperlegible',system-ui,sans-serif;cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(255,255,255,.3)}
-.btn-lateral:hover{text-decoration-color:#fff}
-.barra-movil{display:none}
-.principal{padding:28px clamp(16px,4vw,40px) 48px;max-width:1180px;width:100%;outline:none}
-.cabecera-vista{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:22px}
-.panel{background:var(--superficie);border:1px solid var(--borde);border-radius:14px;padding:20px;margin-bottom:18px;min-width:0}
-.panel h2{margin-bottom:12px}
-.rejilla-paneles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
-.rejilla-paneles .panel{margin-bottom:0}
-
-/* Inicio */
-.cifras{display:grid;grid-template-columns:repeat(3,1fr);background:#fff;border:1px solid var(--borde);border-radius:14px;margin-bottom:18px}
-.cifra{padding:16px clamp(12px,2vw,22px)}
-.cifra+.cifra{border-left:1px solid var(--borde)}
-.cifra b{display:block;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.1}
-.cifra span{color:var(--tinta-2);font-size:.92rem}
-.barras{display:flex;flex-direction:column;gap:12px;margin:0;padding:0;list-style:none}
-.barra-fila{display:grid;grid-template-columns:minmax(80px,130px) 1fr 32px;gap:10px;align-items:center}
-.barra-pista{height:12px;background:var(--musgo-claro);border-radius:6px;overflow:hidden}
-.barra-relleno{height:100%;border-radius:6px}
-.barra-fila b{text-align:right}
-.lista-simple{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
-.lista-simple li{padding:10px 0;border-top:1px solid var(--borde);display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
-.lista-simple li:first-child{border-top:0;padding-top:0}
-.lista-simple small{display:block;color:var(--tinta-2)}
-.vacio{color:var(--tinta-2)}
-
-/* Chips */
-.chip{display:inline-flex;align-items:center;gap:7px;font-size:.9rem;font-weight:700}
-.chip i{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}
-.estado-baja{display:inline-block;padding:2px 10px;border-radius:999px;background:#E9ECEA;color:var(--tinta-2);font-weight:700;font-size:.82rem}
-.estado-alta{display:inline-block;padding:2px 10px;border-radius:999px;background:var(--musgo-claro);color:var(--pino);font-weight:700;font-size:.82rem}
-
-/* Barra de herramientas y tablas */
-.herramientas{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;align-items:center}
-.herramientas .buscar{flex:1 1 240px;position:relative}
-.herramientas .buscar svg{position:absolute;left:12px;top:12px;color:var(--tinta-2)}
-.herramientas .buscar input{padding-left:40px}
-.herramientas select{width:auto;min-width:150px}
-.tabla-caja{background:#fff;border:1px solid var(--borde);border-radius:14px;overflow-x:auto}
-.tabla{width:100%;border-collapse:collapse}
-.tabla th{text-align:left;font-size:.88rem;color:var(--tinta-2);font-weight:700;padding:12px 14px;border-bottom:1px solid var(--borde);white-space:nowrap}
-.tabla td{padding:12px 14px;border-bottom:1px solid var(--borde);vertical-align:top}
-.tabla tbody tr:last-child td{border-bottom:0}
-.tabla tbody tr.clic{cursor:pointer}
-.tabla tbody tr.clic:hover{background:#F6F9F7}
-.tabla td small{display:block;color:var(--tinta-2)}
-.tabla a{color:var(--info);font-weight:700}
-.acciones-fila{display:flex;gap:6px;flex-wrap:wrap}
-.pie-lista{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;color:var(--tinta-2);flex-wrap:wrap}
-dl.roles{display:grid;grid-template-columns:max-content 1fr;gap:8px 18px;margin:0}
-dl.roles dt{font-weight:700}
-dl.roles dd{margin:0;color:var(--tinta-2)}
-.ramas-editor td input,.ramas-editor td select{min-height:38px;padding:5px 8px}
-.ramas-editor td input[type=number]{width:84px}
-
-/* Diálogos */
-dialog{border:0;padding:0;border-radius:16px;width:calc(100% - 24px);max-width:760px;max-height:calc(100vh - 24px);color:var(--tinta);background:#fff;overflow:hidden}
-dialog.angosto{max-width:460px}
-dialog::backdrop{background:rgba(12,28,21,.6)}
-.dlg{display:flex;flex-direction:column;max-height:calc(100vh - 24px);margin:0}
-.dlg-cab{padding:18px 22px 14px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.dlg-cuerpo{padding:18px 22px;overflow:auto;flex:1}
-.dlg-pie{padding:14px 22px;border-top:1px solid var(--borde);display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;background:#fff}
-.pie-izq{margin-right:auto;display:flex;gap:8px;flex-wrap:wrap}
-.pestanas{display:flex;gap:4px;border-bottom:1px solid var(--borde);overflow-x:auto;padding:0 14px}
-.pestana{padding:10px 12px;background:none;border:0;border-bottom:3px solid transparent;font:700 .95rem 'Atkinson Hyperlegible',system-ui,sans-serif;color:var(--tinta-2);cursor:pointer;white-space:nowrap}
-.pestana[aria-selected="true"]{color:var(--pino);border-bottom-color:var(--dorado)}
-.rejilla{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
-.rejilla .ancho{grid-column:1/-1}
-.rejilla .sep{grid-column:1/-1;margin:6px 0 10px;padding-top:12px;border-top:1px solid var(--borde)}
-.rejilla .sep:first-child{border-top:0;padding-top:0;margin-top:0}
-.leyenda{color:var(--tinta-2);font-size:.88rem;margin-bottom:12px}
-.clave-grande{display:block;font:700 1.5rem ui-monospace,Menlo,Consolas,monospace;background:var(--musgo-claro);padding:14px;border-radius:10px;text-align:center;margin:14px 0;user-select:all;word-break:break-all}
-.checks{display:flex;flex-wrap:wrap;gap:8px 18px}
-.checks label{display:flex;align-items:center;gap:8px;font-weight:400}
-.checks input{width:20px;min-height:20px}
-
-/* Avisos */
-#toasts{position:fixed;right:16px;top:16px;display:flex;flex-direction:column;gap:8px;z-index:100;max-width:min(380px,calc(100vw - 32px))}
-.toast{background:var(--pino);color:#fff;padding:12px 16px;border-radius:10px;font-weight:700;border-left:5px solid var(--dorado)}
-.toast.error{background:#7A1F11;border-left-color:#fff}
-
-@media (max-width:980px){.rejilla-paneles{grid-template-columns:1fr}}
-@media (max-width:860px){
-  #vista-login{grid-template-columns:1fr}
-  .login-mapa{min-height:230px;padding:28px}
-  .login-texto{gap:12px}
-  .login-form{align-items:flex-start;padding:28px 20px 40px}
-  #vista-app{grid-template-columns:1fr}
-  .lateral{position:fixed;inset:auto 0 0 0;height:auto;flex-direction:row;padding:6px 6px calc(6px + env(safe-area-inset-bottom));z-index:30;gap:0;box-shadow:0 -1px 0 rgba(255,255,255,.1)}
-  .lateral .marca,.lateral .usuario-caja{display:none}
-  #nav{flex-direction:row;justify-content:space-around;gap:2px}
-  .nav-item{flex-direction:column;gap:2px;justify-content:center;font-size:.72rem;min-height:54px;padding:0 6px;flex:1;text-align:center}
-  .nav-item[aria-current="page"]::before{left:20%;right:20%;top:0;bottom:auto;width:auto;height:3px;border-radius:0 0 3px 3px}
-  .barra-movil{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 8px 6px 16px;background:#fff;border-bottom:1px solid var(--borde);position:sticky;top:0;z-index:20}
-  .barra-movil strong{font-family:'Bricolage Grotesque',system-ui,sans-serif}
-  .principal{padding-bottom:110px}
-  #toasts{top:12px;left:12px;right:12px;max-width:none}
-}
-@media (max-width:760px){
-  .rejilla{grid-template-columns:1fr}
-  .tabla-caja{border:0;background:none;overflow:visible}
-  .tabla thead{position:absolute;left:-9999px}
-  .tabla,.tabla tbody,.tabla tr,.tabla td{display:block}
-  .tabla tr{background:#fff;border:1px solid var(--borde);border-radius:12px;padding:10px 14px;margin-bottom:10px}
-  .tabla td{display:flex;justify-content:space-between;gap:14px;padding:5px 0;border:0;text-align:right}
-  .tabla td::before{content:attr(data-label);color:var(--tinta-2);font-size:.88rem;text-align:left;flex:none}
-  .tabla td.celda-nombre{display:block;text-align:left;padding-bottom:8px}
-  .tabla td.celda-nombre::before{display:none}
-  .tabla td small{text-align:right}
-  .tabla td.celda-acciones{justify-content:flex-start}
-  .tabla td.celda-acciones::before{display:none}
-  dialog.completo{width:100%;max-width:100%;height:100%;max-height:100%;border-radius:0}
-  dialog.completo .dlg{height:100%;max-height:100%}
-  dl.roles{grid-template-columns:1fr}
-  dl.roles dd{margin-bottom:8px}
-  .barra-fila{grid-template-columns:90px 1fr 28px}
-}
-@media (prefers-reduced-motion:reduce){
-  #curvas path{animation:none;stroke-dashoffset:0}
-}
-
-/* Ansilta: fotos, listas de asistencia, finanzas */
-.foto-caja{display:flex;gap:16px;align-items:center;margin-bottom:6px}
-.foto-marco{width:96px;height:96px;border-radius:50%;background:var(--musgo-claro);color:var(--musgo);display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none;border:1px solid var(--borde)}
-.foto-marco img{width:100%;height:100%;object-fit:cover}
-.foto-caja input[type=file]{min-height:0;padding:6px;border-style:dashed}
-.checklista{display:flex;flex-direction:column}
-.check-fila{display:flex;align-items:center;gap:12px;min-height:48px;padding:6px 4px;border-top:1px solid var(--borde);font-weight:400;cursor:pointer}
-.check-fila:first-child{border-top:0}
-.check-fila input{width:22px;min-height:22px;height:22px;flex:none;padding:0}
-.check-fila span{flex:1;font-weight:700}
-.check-fila small{color:var(--tinta-2)}
-.saldo-debe{color:var(--peligro)}
-.saldo-favor{color:var(--musgo)}
-.form-mov{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:0 14px;align-items:end}
-.monto{text-align:right;white-space:nowrap}
-.panel-cab{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
-.panel-cab h2{margin:0}
-.nota-calculo{margin-top:12px}
-.bloque-arancel{margin-bottom:24px}
-.bloque-arancel h3{margin-bottom:2px}
-.bloque-arancel .suave{margin-bottom:10px}
-</style>
-</head>
-<body>
-
-<!-- ============ INGRESO ============ -->
-<div id="vista-login" hidden>
-  <div class="login-mapa">
-    <svg id="curvas" viewBox="0 0 840 680" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
-    <div class="login-texto">
-      <div class="marca marca-grande">
-        <svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="16" fill="none" stroke="currentColor" stroke-width="2"/><path d="M18 5l4.5 13L18 31l-4.5-13z" fill="#E0A526"/></svg>
-        <span>Sistema Ansilta</span>
-      </div>
-      <h1>Las fichas de los grupos scouts de San Juan, ordenadas y a mano.</h1>
-    </div>
-  </div>
-  <div class="login-form">
-    <form id="form-login" class="login-caja" novalidate>
-      <h2>Ingresar</h2>
-      <p class="suave">Ingresar con el correo electrónico con el que se creó el usuario.</p>
-      <div class="campo">
-        <label for="l-usuario">Correo electrónico</label>
-        <input id="l-usuario" autocomplete="username" autocapitalize="none" spellcheck="false" required>
-      </div>
-      <div class="campo">
-        <label for="l-clave">Contraseña</label>
-        <div class="con-boton">
-          <input id="l-clave" type="password" autocomplete="current-password" required>
-          <button type="button" class="btn" id="ver-clave" aria-pressed="false">Mostrar</button>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>ADISCA - San Juan</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+        <!-- Favicon-->
+        <link rel="icon" type="image/x-icon" href="img/liz6.png" />
+        <!-- Font Awesome icons (free version)-->
+        <!--<script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>-->
+        <!-- Google fonts-->
+        <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700" rel="stylesheet" type="text/css" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="css/styles.css" rel="stylesheet" />
+    </head>
+    <body id="page-top">
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
+            <div class="container">
+                <a class="navbar-brand" href="#page-top"><img src="img/logos/LOGONAVBAR.png" alt="..." /></a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                    Menu
+                    <i class="fas fa-bars ms-1"></i>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav text-uppercase ms-auto py-4 py-lg-0">
+                        <li class="nav-item"><a class="nav-link" href="#services">Inicio</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" id="desp" role="button" data-bs-toggle="dropdown" aria-expanded="false">Quienes Somos</a></li>
+                            <ul class="dropdown-menu" aria-labelledby="desp">
+                                <li class="dropdown-item"><a  href="#"> item 1</a>   </li>
+                                <li class="dropdown-item"><a  href="#"> item 2</a>   </li>
+                                <li class="dropdown-item"><a  href="#"> item 3</a>   </li>
+                            </ul>                                                
+                        <li class="nav-item"><a class="nav-link" href="#about">Que hacemos</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#team">Quiero ser Scout</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#team">Donar</a></li>
+                        <li class="nav-item"><a class="nav-link" href="https://script.google.com/macros/s/AKfycbybqWLGMBIOMRRGf2tqW5GCdBMPsvdOSfqX9SvgImcduaSV9orMuQHdULJ_5KEn-Fd8/exec">Sistema Ansilta</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#contact">Contacto</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- Masthead-->
+        <header class="masthead">
+            <div class="container">
+                <div class="masthead-subheading">Bienvenidos!</div>
+                <div class="masthead-heading text-uppercase">A.Di.S.CA - San Juan</div>
+                <a class="btn btn-primary btn-xl text-uppercase" href="#services">Sobre Nosotros</a>
+            </div>
+        </header>
+        <!-- Services-->
+        <section class="page-section" id="services">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">¿Que hacemos los scouts?</h2>
+                    <h3 class="section-subheading text-muted">Lorem ipsum dolor sit amet consectetur.</h3>
+                </div>
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="team-member">
+                            <img class="mx-auto rounded-circle" src="img/jovenes.jpg" alt="..."/>
+                            <h4>A quien esta dirigido</h4>
+                            <p class="text-muted">Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero exercitationem illo laboriosam, molestias tempora quos minus ipsa doloremque, iusto tenetur totam libero delectus temporibus veniam dolore ratione expedita laudantium quo.Lead Designer</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="team-member">
+                            <img class="mx-auto rounded-circle" src="img/logoef1.jpg" alt="..." />
+                            <h4>Como nos formamos</h4>
+                            <p class="text-muted">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Vitae harum natus ad, saepe reprehenderit pariatur recusandae nihil et quam fugit accusamus possimus, autem, repellat ea fuga officiis eaque ex culpa.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="team-member">
+                            <img class="mx-auto rounded-circle" src="img/donde1.jpg" alt="..." />
+                            <h4>A donde queremos llegar</h4>
+                            <p class="text-muted">Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni aut repudiandae temporibus, tempore ea accusamus repellendus cumque a accusantium fuga veniam nihil voluptatibus corporis impedit officia perferendis qui porro doloribus?</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Portfolio Grid-->
+        <section class="page-section bg-light" id="portfolio">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Quienes Somos</h2>
+                    <h3 class="section-subheading text-muted">Lorem ipsum dolor sit amet consectetur.</h3>
+                </div>
+                <div class="row">
+                    <div class="col-lg-4 col-sm-6 mb-4">
+                        <!-- Portfolio item 1-->
+                        <div class="portfolio-item">
+                            <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal1">
+                                <div class="portfolio-hover">
+                                    <div class="portfolio-hover-content"><i class="fas fa-plus fa-3x"></i></div>
+                                </div>
+                                <img class="img-fluid" src="img/histo1.jpg" alt="..." />
+                            </a>
+                            <div class="portfolio-caption">
+                                <div class="portfolio-caption-heading">Historia</div>
+                                <div class="portfolio-caption-subheading text-muted">Illustration</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6 mb-4">
+                        <!-- Portfolio item 2-->
+                        <div class="portfolio-item">
+                            <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal2">
+                                <div class="portfolio-hover">
+                                    <div class="portfolio-hover-content"><i class="fas fa-plus fa-3x"></i></div>
+                                </div>
+                                <img class="img-fluid" src="img/siluetas1.jpg" alt="..." />
+                            </a>
+                            <div class="portfolio-caption">
+                                <div class="portfolio-caption-heading">Valores</div>
+                                <div class="portfolio-caption-subheading text-muted">Graphic Design</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6 mb-4">
+                        <!-- Portfolio item 3-->
+                        <div class="portfolio-item">
+                            <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal3">
+                                <div class="portfolio-hover">
+                                    <div class="portfolio-hover-content"><i class="fas fa-plus fa-3x"></i></div>
+                                </div>
+                                <img class="img-fluid" src="img/saludo1.png" alt="..." />
+                            </a>
+                            <div class="portfolio-caption">
+                                <div class="portfolio-caption-heading">Programa</div>
+                                <div class="portfolio-caption-subheading text-muted">Identity</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6 mb-4 mb-lg-0">
+                        <!-- Portfolio item 4-->
+                        <div class="portfolio-item">
+                            <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal4">
+                                <div class="portfolio-hover">
+                                    <div class="portfolio-hover-content"><i class="fas fa-plus fa-3x"></i></div>
+                                </div>
+                                <img class="img-fluid" src="img/campa1.png" alt="..." />
+                            </a>
+                            <div class="portfolio-caption">
+                                <div class="portfolio-caption-heading">Metodo</div>
+                                <div class="portfolio-caption-subheading text-muted">Branding</div>
+                            </div>
+                        </div>56
+                    </div>
+                    <div class="col-lg-4 col-sm-6 mb-4 mb-sm-0">
+                        <!-- Portfolio item 5-->
+                        <div class="portfolio-item">
+                            <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal5">
+                                <div class="portfolio-hover">
+                                    <div class="portfolio-hover-content"><i class="fas fa-plus fa-3x"></i></div>
+                                </div>
+                                <img class="img-fluid" src="img/flor1.png" alt="..." />
+                            </a>
+                            <div class="portfolio-caption">
+                                <div class="portfolio-caption-heading">Promesa</div>
+                                <div class="portfolio-caption-subheading text-muted">Website Design</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6">
+                        <!-- Portfolio item 6-->
+                        <div class="portfolio-item">
+                            <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal6">
+                                <div class="portfolio-hover">
+                                    <div class="portfolio-hover-content"><i class="fas fa-plus fa-3x"></i></div>
+                                </div>
+                                <img class="img-fluid" src="img/vela1.png" alt="..." />
+                            </a>
+                            <div class="portfolio-caption">
+                                <div class="portfolio-caption-heading">Agente Pastoral</div>
+                                <div class="portfolio-caption-subheading text-muted">Photography</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- About-->
+        <section class="page-section" id="about">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Eventos</h2>
+                    <h3 class="section-subheading text-muted">Lorem ipsum dolor sit amet consectetur.</h3>
+                </div>
+                <ul class="timeline">
+                    <li>
+                        <div class="timeline-image"><img class="rounded-circle img-fluid" src="img/apertura1.png" alt="..." /></div>
+                        <div class="timeline-panel">
+                            <div class="timeline-heading">
+                                <h4>Abril, 2026</h4>
+                                <h4 class="subheading">Apertura Scout</h4>
+                            </div>
+                            <div class="timeline-body"><p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt ut voluptatum eius sapiente, totam reiciendis temporibus qui quibusdam, recusandae sit vero unde, sed, incidunt et ea quo dolore laudantium consectetur!</p></div>
+                        </div>
+                    </li>
+                    <li class="timeline-inverted">
+                        <div class="timeline-image"><img class="rounded-circle img-fluid" src="img/formacion1.png" alt="..." /></div>
+                        <div class="timeline-panel">
+                            <div class="timeline-heading">
+                                <h4>Agosto 2026</h4>
+                                <h4 class="subheading">Formacion N1</h4>
+                            </div>
+                            <div class="timeline-body"><p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt ut voluptatum eius sapiente, totam reiciendis temporibus qui quibusdam, recusandae sit vero unde, sed, incidunt et ea quo dolore laudantium consectetur!</p></div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="timeline-image"><img class="rounded-circle img-fluid" src="img/nss1.png" alt="..." /></div>
+                        <div class="timeline-panel">
+                            <div class="timeline-heading">
+                                <h4>Septiembre 2026</h4>
+                                <h4 class="subheading">Nuestra Señora de los Scout</h4>
+                            </div>
+                            <div class="timeline-body"><p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt ut voluptatum eius sapiente, totam reiciendis temporibus qui quibusdam, recusandae sit vero unde, sed, incidunt et ea quo dolore laudantium consectetur!</p></div>
+                        </div>
+                    </li>
+                    <li class="timeline-inverted">
+                        <div class="timeline-image"><img class="rounded-circle img-fluid" src="img/luz1.png" alt="..." /></div>
+                        <div class="timeline-panel">
+                            <div class="timeline-heading">
+                                <h4>Diciembre 2026</h4>
+                                <h4 class="subheading">Luz de Belen</h4>
+                            </div>
+                            <div class="timeline-body"><p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt ut voluptatum eius sapiente, totam reiciendis temporibus qui quibusdam, recusandae sit vero unde, sed, incidunt et ea quo dolore laudantium consectetur!</p></div>
+                        </div>
+                    </li>
+                    <li class="timeline-inverted">
+                        <div class="timeline-image">
+                            <h4>
+                                Se parte
+                                <br />
+                                de nuestra
+                                <br />
+                                historia!
+                            </h4>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </section>
+        <!-- Team-->
+        <section class="page-section bg-light" id="team">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Nuestro Equipo</h2>
+                    <h3 class="section-subheading text-muted">Lorem ipsum dolor sit amet consectetur.</h3>
+                </div>
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="team-member">
+                            <img class="mx-auto rounded-circle" src="img/mlozano1.jpg" alt="..." />
+                            <h4>Monseñor Lozano</h4>
+                            <p class="text-muted">Lead Designer</p>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Parveen Anand Twitter Profile"><i class="fab fa-twitter"></i></a>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Parveen Anand Facebook Profile"><i class="fab fa-facebook-f"></i></a>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Parveen Anand LinkedIn Profile"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="team-member">
+                            <img class="mx-auto rounded-circle" src="img/capellan1.jpg" alt="..." />
+                            <h4>Capellan Scout Gaston Molina</h4>
+                            <p class="text-muted">Lead Marketer</p>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Diana Petersen Twitter Profile"><i class="fab fa-twitter"></i></a>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Diana Petersen Facebook Profile"><i class="fab fa-facebook-f"></i></a>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Diana Petersen LinkedIn Profile"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="team-member">
+                            <img class="mx-auto rounded-circle" src="img/NSS1.jpg" alt="..." />
+                            <h4>Equipo Diocesano</h4>
+                            <p class="text-muted">Lead Developer</p>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Larry Parker Twitter Profile"><i class="fab fa-twitter"></i></a>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Larry Parker Facebook Profile"><i class="fab fa-facebook-f"></i></a>
+                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Larry Parker LinkedIn Profile"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-8 mx-auto text-center"><p class="large text-muted">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Optio aspernatur sequi temporibus similique eius nulla ullam distinctio blanditiis quia. Dignissimos deleniti accusamus maxime reprehenderit est perspiciatis temporibus optio quisquam distinctio!
+                        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eaque, laboriosam veritatis, quos non quis ad perspiciatis, totam corporis ea, alias ut unde.</p></div>
+                </div>
+            </div>
+        </section>
+        <!-- Clients-->
+        <div class="py-5">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-3 col-sm-6 my-3">
+                        <a href="#!"><img class="img-fluid img-brand d-block mx-auto" src="img/logos/GSJ_logo.png" alt="..." aria-label="Microsoft Logo" /></a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 my-3">
+                        <a href="#!"><img class="img-fluid img-brand d-block mx-auto" src="img/logos/crlogo.png" alt="..." aria-label="Google Logo" /></a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 my-3">
+                        <a href="#!"><img class="img-fluid img-brand d-block mx-auto" src="img/logos/logoprote.png" alt="..." aria-label="Facebook Logo" /></a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 my-3">
+                        <a href="#!"><img class="img-fluid img-brand d-block mx-auto" src="img/logos/arzobispado.png" alt="..." aria-label="IBM Logo" /></a>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-      <p id="l-error" class="msg-error" role="alert" hidden></p>
-      <button class="btn btn-primario ancho" id="l-enviar" type="submit">Ingresar</button>
-    </form>
-  </div>
-</div>
-
-<!-- ============ APLICACIÓN ============ -->
-<div id="vista-app" hidden>
-  <aside class="lateral">
-    <div class="marca">
-      <svg width="34" height="34" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="16" fill="none" stroke="currentColor" stroke-width="2"/><path d="M18 5l4.5 13L18 31l-4.5-13z" fill="#E0A526"/></svg>
-      <div><strong id="nombre-grupo">Grupo Scout</strong><small>Sistema Ansilta</small></div>
-    </div>
-    <nav id="nav" aria-label="Secciones"></nav>
-    <div class="usuario-caja">
-      <div><strong id="u-nombre"></strong><small id="u-rol"></small></div>
-      <div class="usuario-acciones">
-        <button type="button" class="btn-lateral" id="btn-clave">Cambiar contraseña</button>
-        <button type="button" class="btn-lateral" id="btn-salir">Salir</button>
-      </div>
-    </div>
-  </aside>
-  <div class="columna">
-    <header class="barra-movil">
-      <strong id="nombre-grupo-m">Grupo Scout</strong>
-      <div>
-        <button type="button" class="btn btn-fantasma btn-chico" id="btn-clave-m">Contraseña</button>
-        <button type="button" class="btn btn-fantasma btn-chico" id="btn-salir-m">Salir</button>
-      </div>
-    </header>
-    <main id="principal" class="principal" tabindex="-1"></main>
-  </div>
-</div>
-
-<div id="toasts" aria-live="polite"></div>
-
-<!-- ============ DIÁLOGO: FICHA ============ -->
-<dialog id="dlg-miembro" class="completo" aria-labelledby="m-titulo">
-  <form id="form-miembro" class="dlg" novalidate>
-    <div class="dlg-cab">
-      <div><h2 id="m-titulo"></h2><p id="m-sub" class="suave"></p></div>
-      <button type="button" class="btn btn-fantasma" data-cerrar aria-label="Cerrar" data-ico="x"></button>
-    </div>
-    <div class="pestanas" role="tablist" id="m-pestanas"></div>
-    <div class="dlg-cuerpo" id="m-cuerpo">
-      <p class="leyenda" id="m-leyenda">Los campos con <span class="req">*</span> son obligatorios.</p>
-      <p id="m-error" class="msg-error" role="alert" hidden></p>
-    </div>
-    <div class="dlg-pie">
-      <div class="pie-izq">
-        <button type="button" class="btn btn-peligro" id="m-baja" hidden>Dar de baja</button>
-        <button type="button" class="btn btn-peligro" id="m-eliminar" hidden>Eliminar definitivamente</button>
-      </div>
-      <button type="button" class="btn" data-cerrar>Cerrar</button>
-      <button type="submit" class="btn btn-primario" id="m-guardar">Guardar ficha</button>
-    </div>
-  </form>
-</dialog>
-
-<!-- ============ DIÁLOGO: USUARIO ============ -->
-<dialog id="dlg-usuario" class="angosto completo" aria-labelledby="us-titulo">
-  <form id="form-usuario" class="dlg" novalidate>
-    <div class="dlg-cab">
-      <h2 id="us-titulo"></h2>
-      <button type="button" class="btn btn-fantasma" data-cerrar aria-label="Cerrar" data-ico="x"></button>
-    </div>
-    <div class="dlg-cuerpo">
-      <p id="us-error" class="msg-error" role="alert" hidden></p>
-      <div class="campo" id="us-persona-caja"><label for="us_Persona">Persona cargada (opcional)</label><select id="us_Persona"></select><small class="ayuda">Elegir un adulto ya cargado completa nombre, correo y grupo.</small></div>
-      <div class="campo" id="us-usuario-caja"><label for="us_Usuario">Usuario de ingreso</label><input id="us_Usuario" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="120"><small class="ayuda">Es el correo electrónico de la persona.</small></div>
-      <div class="campo"><label for="us_Nombre">Nombre y apellido <span class="req">*</span></label><input id="us_Nombre" autocomplete="off" maxlength="80"></div>
-      <div class="campo"><label for="us_Rol">Rol <span class="req">*</span></label><select id="us_Rol"></select><small class="ayuda" id="us_RolAyuda"></small></div>
-      <div class="campo" id="us-grupo-caja"><label for="us_Grupo">Grupo scout <span class="req">*</span></label><select id="us_Grupo"></select></div>
-      <div class="campo" id="us-ramas-caja"><label id="us-ramas-label">Ramas a las que accede</label><div class="checks" id="us_Ramas" role="group" aria-labelledby="us-ramas-label"></div></div>
-      <div class="campo"><label for="us_Email">Correo electrónico <span class="req">*</span></label><input id="us_Email" type="email" autocomplete="off" maxlength="120"><small class="ayuda">Con este correo ingresa al sistema y recibe su contraseña temporal.</small></div>
-      <div class="campo"><label for="us_Activo">Estado de la cuenta</label><select id="us_Activo"><option value="SI">Activa</option><option value="NO">Desactivada</option></select></div>
-    </div>
-    <div class="dlg-pie">
-      <button type="button" class="btn" data-cerrar>Cancelar</button>
-      <button type="submit" class="btn btn-primario" id="us-guardar">Guardar usuario</button>
-    </div>
-  </form>
-</dialog>
-
-<!-- ============ DIÁLOGO: CLAVE TEMPORAL ============ -->
-<dialog id="dlg-clave-temp" class="angosto" aria-labelledby="k-titulo">
-  <div class="dlg">
-    <div class="dlg-cab"><h2 id="k-titulo">Contraseña temporal</h2></div>
-    <div class="dlg-cuerpo">
-      <p>No se pudo enviar el correo. Entregar esta contraseña a <strong id="k-usuario"></strong>. Se muestra una sola vez y deberá cambiarla al ingresar.</p>
-      <code class="clave-grande" id="k-clave"></code>
-    </div>
-    <div class="dlg-pie">
-      <button type="button" class="btn" id="k-copiar">Copiar</button>
-      <button type="button" class="btn btn-primario" data-cerrar>Listo</button>
-    </div>
-  </div>
-</dialog>
-
-<!-- ============ DIÁLOGO: CAMBIAR CONTRASEÑA ============ -->
-<dialog id="dlg-cambio" class="angosto" aria-labelledby="cc-titulo">
-  <form id="form-cambio" class="dlg" novalidate>
-    <div class="dlg-cab"><h2 id="cc-titulo">Cambiar contraseña</h2></div>
-    <div class="dlg-cuerpo">
-      <p class="suave" id="cc-aviso" hidden style="margin-bottom:14px">La contraseña actual es temporal. Elegir una nueva para continuar.</p>
-      <p id="cc-error" class="msg-error" role="alert" hidden></p>
-      <div class="campo"><label for="cc-actual">Contraseña actual</label><input id="cc-actual" type="password" autocomplete="current-password"></div>
-      <div class="campo"><label for="cc-nueva">Contraseña nueva</label><input id="cc-nueva" type="password" autocomplete="new-password"><small class="ayuda">Mínimo 8 caracteres, con letras y números.</small></div>
-      <div class="campo"><label for="cc-repetir">Repetir contraseña nueva</label><input id="cc-repetir" type="password" autocomplete="new-password"></div>
-    </div>
-    <div class="dlg-pie">
-      <button type="button" class="btn" data-cerrar id="cc-cancelar">Cancelar</button>
-      <button type="submit" class="btn btn-primario" id="cc-guardar">Guardar contraseña</button>
-    </div>
-  </form>
-</dialog>
-
-<!-- ============ DIÁLOGO: CONFIRMAR ============ -->
-<dialog id="dlg-confirm" class="angosto" aria-labelledby="c-titulo">
-  <div class="dlg">
-    <div class="dlg-cab"><h2 id="c-titulo"></h2></div>
-    <div class="dlg-cuerpo"><p id="c-texto"></p></div>
-    <div class="dlg-pie">
-      <button type="button" class="btn" id="c-cancel">Cancelar</button>
-      <button type="button" class="btn btn-primario" id="c-ok">Confirmar</button>
-    </div>
-  </div>
-</dialog>
-
-<!-- ============ DIÁLOGO: EVENTO ============ -->
-<dialog id="dlg-evento" class="angosto completo" aria-labelledby="ev-titulo">
-  <form id="form-evento" class="dlg" novalidate>
-    <div class="dlg-cab">
-      <h2 id="ev-titulo"></h2>
-      <button type="button" class="btn btn-fantasma" data-cerrar aria-label="Cerrar" data-ico="x"></button>
-    </div>
-    <div class="dlg-cuerpo">
-      <p id="ev-error" class="msg-error" role="alert" hidden></p>
-      <div class="campo"><label for="ev_Nombre">Nombre del evento <span class="req">*</span></label><input id="ev_Nombre" maxlength="100" autocomplete="off"></div>
-      <div class="campo"><label for="ev_Fecha">Fecha <span class="req">*</span></label><input id="ev_Fecha" type="date"></div>
-      <div class="campo"><label for="ev_Lugar">Lugar</label><input id="ev_Lugar" maxlength="120" autocomplete="off"></div>
-    </div>
-    <div class="dlg-pie">
-      <button type="button" class="btn" data-cerrar>Cancelar</button>
-      <button type="submit" class="btn btn-primario" id="ev-guardar">Guardar evento</button>
-    </div>
-  </form>
-</dialog>
-
-<!-- ============ DIÁLOGO: LISTA DE ASISTENCIA ============ -->
-<dialog id="dlg-asistencia" class="completo" aria-labelledby="as-titulo">
-  <div class="dlg">
-    <div class="dlg-cab">
-      <div><h2 id="as-titulo"></h2><p id="as-sub" class="suave"></p></div>
-      <button type="button" class="btn btn-fantasma" data-cerrar aria-label="Cerrar" data-ico="x"></button>
-    </div>
-    <div class="dlg-cuerpo">
-      <p id="as-error" class="msg-error" role="alert" hidden></p>
-      <div class="herramientas">
-        <div class="campo" id="as-grupo-caja" style="margin:0"><label for="as-grupo">Grupo scout</label><select id="as-grupo"></select></div>
-        <div class="buscar"><input id="as-q" type="search" placeholder="Buscar persona" aria-label="Buscar persona" autocomplete="off" style="padding-left:12px"></div>
-      </div>
-      <p class="suave" id="as-conteo" style="margin-bottom:8px"></p>
-      <div id="as-lista" class="checklista"></div>
-    </div>
-    <div class="dlg-pie">
-      <button type="button" class="btn" id="as-csv">Descargar lista guardada (CSV)</button>
-      <button type="button" class="btn" data-cerrar>Cerrar</button>
-      <button type="button" class="btn btn-primario" id="as-guardar">Guardar lista</button>
-    </div>
-  </div>
-</dialog>
-
-<!-- ============ DIÁLOGO: ARANCEL ============ -->
-<dialog id="dlg-arancel" class="angosto completo" aria-labelledby="ar-titulo">
-  <form id="form-arancel" class="dlg" novalidate>
-    <div class="dlg-cab">
-      <h2 id="ar-titulo"></h2>
-      <button type="button" class="btn btn-fantasma" data-cerrar aria-label="Cerrar" data-ico="x"></button>
-    </div>
-    <div class="dlg-cuerpo">
-      <p id="ar-error" class="msg-error" role="alert" hidden></p>
-      <div class="campo"><label for="ar_Concepto">Concepto <span class="req">*</span></label><input id="ar_Concepto" maxlength="100" autocomplete="off"><small class="ayuda">Por ejemplo: Cuota anual 2026 o Campamento de verano.</small></div>
-      <div class="campo"><label for="ar_VB">Valor por beneficiario</label><input id="ar_VB" inputmode="decimal" autocomplete="off"><small class="ayuda">Lo que debe pagar cada beneficiario de la nómina. Usar coma para los centavos y no usar puntos de miles.</small></div>
-      <div class="campo"><label for="ar_VA">Valor por adulto</label><input id="ar_VA" inputmode="decimal" autocomplete="off"><small class="ayuda">Dejar vacío o en 0 si los adultos no pagan.</small></div>
-      <div class="campo"><label for="ar_Fecha">Fecha</label><input id="ar_Fecha" type="date"></div>
-      <div class="campo"><label for="ar_Activo">Estado</label><select id="ar_Activo"><option value="SI">Vigente (se suma a lo que debe cada grupo)</option><option value="NO">Desactivado (no se cuenta)</option></select></div>
-    </div>
-    <div class="dlg-pie">
-      <button type="button" class="btn" data-cerrar>Cancelar</button>
-      <button type="submit" class="btn btn-primario" id="ar-guardar">Guardar arancel</button>
-    </div>
-  </form>
-</dialog>
-
-<!-- ============ DIÁLOGO: DESCUENTO ============ -->
-<dialog id="dlg-descuento" class="angosto completo" aria-labelledby="ds-titulo">
-  <form id="form-descuento" class="dlg" novalidate>
-    <div class="dlg-cab">
-      <h2 id="ds-titulo"></h2>
-      <button type="button" class="btn btn-fantasma" data-cerrar aria-label="Cerrar" data-ico="x"></button>
-    </div>
-    <div class="dlg-cuerpo">
-      <p id="ds-error" class="msg-error" role="alert" hidden></p>
-      <div class="campo"><label for="ds_Arancel">Arancel</label><select id="ds_Arancel"></select></div>
-      <div class="campo"><label for="ds_Alcance">Se aplica a</label><select id="ds_Alcance"><option value="Persona">Una persona</option><option value="Rol">Todas las personas de un rol</option><option value="Grupo">Todo un grupo scout</option></select></div>
-      <div class="campo"><label for="ds_Destino" id="ds-destino-label">Persona <span class="req">*</span></label><select id="ds_Destino"></select></div>
-      <div class="campo"><label for="ds_Tipo">Tipo de descuento</label><select id="ds_Tipo"><option value="Porcentaje">Porcentaje (%)</option><option value="Monto">Monto fijo ($)</option></select></div>
-      <div class="campo"><label for="ds_Valor">Valor <span class="req">*</span></label><input id="ds_Valor" inputmode="decimal" autocomplete="off"><small class="ayuda" id="ds-valor-ayuda"></small></div>
-      <div class="campo"><label for="ds_Motivo">Motivo</label><input id="ds_Motivo" maxlength="120" autocomplete="off"><small class="ayuda">Por ejemplo: hermano scout, beca o situación económica.</small></div>
-    </div>
-    <div class="dlg-pie">
-      <button type="button" class="btn" data-cerrar>Cancelar</button>
-      <button type="submit" class="btn btn-primario" id="ds-guardar">Guardar descuento</button>
-    </div>
-  </form>
-</dialog>
-
-<!-- ============ DIÁLOGO: DETALLE DE LO QUE DEBE UN GRUPO ============ -->
-<dialog id="dlg-detalle" class="completo" aria-labelledby="dt-titulo">
-  <div class="dlg">
-    <div class="dlg-cab">
-      <div><h2 id="dt-titulo"></h2><p id="dt-sub" class="suave"></p></div>
-      <button type="button" class="btn btn-fantasma" data-cerrar aria-label="Cerrar" data-ico="x"></button>
-    </div>
-    <div class="dlg-cuerpo" id="dt-cuerpo"></div>
-    <div class="dlg-pie">
-      <button type="button" class="btn" id="dt-csv">Descargar detalle (CSV)</button>
-      <button type="button" class="btn btn-primario" data-cerrar>Cerrar</button>
-    </div>
-  </div>
-</dialog>
-
-<script>
-(function () {
-'use strict';
-
-/* ---------- Utilidades ---------- */
-const $ = (s, r) => (r || document).querySelector(s);
-const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
-const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const norm = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-const COLORES = ['#E0A526', '#2F6B4F', '#2A5F8F', '#8E4C9C', '#B5541F', '#5A6B62'];
-const ROLES_INFO = {
-  ADMIN: 'Administración provincial: ve todos los grupos y administra grupos, usuarios, ajustes, eventos, finanzas y registro.',
-  COORDINADOR: 'Coordina un grupo: ve y edita las fichas de todas las ramas de su grupo, crea eventos, consulta las finanzas del grupo y el registro.',
-  DIRIGENTE: 'Carga y edita las fichas de sus ramas dentro de su grupo, incluida la información de salud, y pasa lista en los eventos.',
-  CONSULTA: 'Consulta las fichas de sus ramas y las listas de su grupo, sin datos de salud y sin editar.'
-};
-const ROL_NOMBRE = { ADMIN: 'Administración', COORDINADOR: 'Coordinación', DIRIGENTE: 'Dirigente', CONSULTA: 'Consulta' };
-
-const ICONOS = {
-  inicio: '<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>',
-  integrantes: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="9" r="2.5"/><path d="M17 14.2c2.6.2 4.5 2 4.5 5.3"/>',
-  usuarios: '<path d="M12 3l8 3v6c0 4.5-3.2 7.8-8 9-4.8-1.2-8-4.5-8-9V6z"/><circle cx="12" cy="10" r="2.5"/><path d="M7.5 17c.8-2 2.4-3 4.5-3s3.7 1 4.5 3"/>',
-  registro: '<path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
-  ajustes: '<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
-  x: '<path d="M6 6l12 12M18 6L6 18"/>',
-  plus: '<path d="M12 5v14M5 12h14"/>',
-  buscar: '<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4-4"/>',
-  bajar: '<path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/>',
-  eventos: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
-  finanzas: '<circle cx="12" cy="12" r="8.5"/><path d="M14.5 9.2c-.6-.7-1.5-1-2.5-1-1.5 0-2.6.8-2.6 2s1 1.7 2.6 2 2.6.8 2.6 2-1.1 2-2.6 2c-1 0-2-.4-2.6-1.1M12 6.5v1.7M12 15.8v1.7"/>',
-  camara: '<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>'
-};
-function ico(n, t) {
-  return '<svg class="ico" viewBox="0 0 24 24" width="' + (t || 20) + '" height="' + (t || 20) + '" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONOS[n] + '</svg>';
-}
-
-/* ---------- Estado ---------- */
-const S = { token: null, user: null, permisos: {}, ramas: [], grupos: [], roles: [], listas: {}, config: {}, miembros: null, usuarios: null,
-  vista: 'inicio', filtros: { q: '', rama: '', estado: 'Activo', tipo: '', grupo: '', rol: '' }, limite: 60 };
-
-const almacen = {
-  get() { try { return sessionStorage.getItem('sc_token'); } catch (e) { return null; } },
-  set(v) { try { v ? sessionStorage.setItem('sc_token', v) : sessionStorage.removeItem('sc_token'); } catch (e) { /* sin almacenamiento */ } }
-};
-
-/* ---------- Comunicación con el servidor ---------- */
-function api(accion, datos) {
-  return new Promise((resolve, reject) => {
-    google.script.run
-      .withSuccessHandler(r => {
-        if (r && r.ok) resolve(r.datos);
-        else { const e = new Error((r && r.error) || 'Ocurrió un error.'); e.code = r && r.code; reject(e); }
-      })
-      .withFailureHandler(() => reject(new Error('No se pudo conectar con el servidor. Revisar la conexión e intentar de nuevo.')))
-      .apiCall(S.token, accion, datos || {});
-  });
-}
-
-function manejarError(e) {
-  if (e && e.code === 'SESION') { cerrarLocal('La sesión venció. Ingresar de nuevo.'); return; }
-  toast(e && e.message ? e.message : 'Ocurrió un error.', 'error');
-}
-
-function toast(msg, tipo) {
-  const t = document.createElement('div');
-  t.className = 'toast' + (tipo === 'error' ? ' error' : '');
-  t.textContent = msg;
-  $('#toasts').appendChild(t);
-  setTimeout(() => t.remove(), tipo === 'error' ? 6000 : 3500);
-}
-
-/* ---------- Diálogos ---------- */
-function abrir(d) { if (!d.open) d.showModal(); }
-function confirmar(titulo, texto, boton, peligro) {
-  return new Promise(res => {
-    const d = $('#dlg-confirm');
-    $('#c-titulo').textContent = titulo;
-    $('#c-texto').textContent = texto;
-    const ok = $('#c-ok');
-    ok.textContent = boton || 'Confirmar';
-    ok.className = 'btn ' + (peligro ? 'btn-peligro-solido' : 'btn-primario');
-    let resultado = false;
-    const fin = () => { d.removeEventListener('close', fin); res(resultado); };
-    d.addEventListener('close', fin);
-    ok.onclick = () => { resultado = true; d.close(); };
-    $('#c-cancel').onclick = () => d.close();
-    d.showModal();
-  });
-}
-document.addEventListener('click', e => {
-  const b = e.target.closest('[data-cerrar]');
-  if (b) { const d = b.closest('dialog'); if (d) d.close(); }
-});
-
-/* ---------- Ingreso y sesión ---------- */
-function dibujarCurvas() {
-  const cx = 430, cy = 340;
-  let html = '';
-  for (let i = 0; i < 12; i++) {
-    const r = 36 + i * 32, pts = [];
-    for (let a = 0; a <= 96; a++) {
-      const t = a / 96 * Math.PI * 2;
-      const rr = r + 12 * Math.sin(3 * t + i * 0.5) + 7 * Math.sin(5 * t + i * 1.3) + i * 2.2 * Math.cos(2 * t);
-      pts.push((cx + rr * Math.cos(t) * 1.2).toFixed(1) + ' ' + (cy + rr * Math.sin(t) * 0.92).toFixed(1));
-    }
-    html += '<path pathLength="1" style="--i:' + i + '" d="M' + pts.join(' L') + 'Z"/>';
-  }
-  $('#curvas').innerHTML = html;
-}
-
-function mostrarLogin(msg) {
-  $('#vista-app').hidden = true;
-  $('#vista-login').hidden = false;
-  const err = $('#l-error');
-  if (msg) { err.textContent = msg; err.hidden = false; } else err.hidden = true;
-  setTimeout(() => $('#l-usuario').focus(), 50);
-}
-
-function cerrarLocal(msg) {
-  S.token = null; S.user = null; S.miembros = null; S.usuarios = null;
-  almacen.set(null);
-  $$('dialog[open]').forEach(d => d.close());
-  mostrarLogin(msg);
-}
-
-function entrar(info) {
-  S.user = info.usuario; S.permisos = info.permisos; S.ramas = info.ramas; S.grupos = info.grupos || [];
-  S.listas = info.listas; S.config = info.config; S.miembros = null; S.roles = info.roles || [];
-  S.filtros = { q: '', rama: '', estado: 'Activo', tipo: '', grupo: '', rol: '' };
-  $('#vista-login').hidden = true;
-  $('#vista-app').hidden = false;
-  $('#u-nombre').textContent = S.user.Nombre;
-  $('#u-rol').textContent = ROL_NOMBRE[S.user.Rol] || S.user.Rol;
-  poneNombreGrupo();
-  construirFormMiembro();
-  renderNav();
-  S.vista = 'inicio';
-  if (S.user.Cambiar_Clave === 'SI') {
-    $('#principal').innerHTML = '';
-    abrirCambioClave(true);
-  } else {
-    irA('inicio');
-  }
-}
-
-function poneNombreGrupo() {
-  const n = (S.user && S.user.Grupo) || S.config.NOMBRE_GRUPO;
-  $('#nombre-grupo').textContent = n;
-  $('#nombre-grupo-m').textContent = n;
-  document.title = n + ' - Sistema Ansilta';
-}
-
-function salir() {
-  const t = S.token;
-  google.script.run.logout(t);
-  cerrarLocal('');
-}
-
-/* ---------- Navegación ---------- */
-function renderNav() {
-  const p = S.permisos;
-  const it = [{ id: 'inicio', t: 'Inicio' }, { id: 'integrantes', t: 'Integrantes' }];
-  if (p.eventos) it.push({ id: 'eventos', t: 'Eventos y listas' });
-  if (p.finanzas) it.push({ id: 'finanzas', t: 'Finanzas' });
-  if (p.usuarios) it.push({ id: 'usuarios', t: 'Usuarios' });
-  if (p.auditoria) it.push({ id: 'registro', t: 'Registro' });
-  if (p.ajustes) it.push({ id: 'ajustes', t: 'Ajustes' });
-  $('#nav').innerHTML = it.map(i =>
-    '<button type="button" class="nav-item" data-vista="' + i.id + '">' + ico(i.id) + '<span>' + esc(i.t) + '</span></button>').join('');
-}
-
-const VISTAS = { inicio: vistaInicio, integrantes: vistaIntegrantes, eventos: vistaEventos, finanzas: vistaFinanzas, usuarios: vistaUsuarios, registro: vistaRegistro, ajustes: vistaAjustes };
-
-function irA(v) {
-  S.vista = v;
-  $$('.nav-item').forEach(b => b.setAttribute('aria-current', b.dataset.vista === v ? 'page' : 'false'));
-  const p = $('#principal');
-  p.onclick = null;
-  p.innerHTML = '<p class="cargando">Cargando…</p>';
-  window.scrollTo(0, 0);
-  Promise.resolve(VISTAS[v]()).catch(manejarError);
-}
-
-/* ---------- Helpers de presentación ---------- */
-function colorRama(nombre) {
-  const i = S.ramas.findIndex(r => r.Nombre === nombre);
-  return COLORES[(i < 0 ? 5 : i) % COLORES.length];
-}
-function chipRama(n) { return '<span class="chip"><i style="background:' + colorRama(n) + '"></i>' + esc(n) + '</span>'; }
-function edadDe(iso) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso || '')) return null;
-  const p = iso.split('-').map(Number), h = new Date();
-  let e = h.getFullYear() - p[0];
-  if (h.getMonth() + 1 < p[1] || (h.getMonth() + 1 === p[1] && h.getDate() < p[2])) e--;
-  return e;
-}
-function primerNombre(n) { return String(n || '').split(' ')[0]; }
-function etiqueta(v) { return v === 'SI' ? 'Sí' : v === 'NO' ? 'No' : v; }
-function fechaLarga(f) { return String(f || '').replace(/^(\d{4})-(\d{2})-(\d{2}).*$/, '$3/$2/$1'); }
-function cuando(dias) { return dias === 0 ? 'Hoy' : dias === 1 ? 'Mañana' : 'En ' + dias + ' días'; }
-async function cargarMiembros(forzar) {
-  if (!S.miembros || forzar) S.miembros = await api('miembros:listar');
-  return S.miembros;
-}
-
-/* ---------- Vista: Inicio ---------- */
-async function vistaInicio() {
-  const d = await api('dashboard');
-  const max = Math.max(1, ...d.porRama.map(r => r.cantidad));
-  const c = $('#principal');
-  c.innerHTML =
-    '<div class="cabecera-vista"><div><h1>Hola, ' + esc(primerNombre(S.user.Nombre)) + '</h1><p class="suave">' + esc((S.user && S.user.Grupo) || S.config.NOMBRE_GRUPO) + '</p></div>' +
-    (S.permisos.crear ? '<button class="btn btn-primario" id="i-nueva" type="button">' + ico('plus') + 'Nueva ficha</button>' : '') + '</div>' +
-    '<div class="cifras">' +
-      '<div class="cifra"><b>' + d.activos + '</b><span>Integrantes activos</span></div>' +
-      '<div class="cifra"><b>' + d.inactivos + '</b><span>De baja</span></div>' +
-      '<div class="cifra"><b>' + d.incompletasTotal + '</b><span>Fichas por completar</span></div>' +
-    '</div>' +
-    '<div class="rejilla-paneles">' +
-      '<section class="panel"><h2>Integrantes por rama</h2>' +
-        (d.porRama.length ? '<ul class="barras">' + d.porRama.map(r =>
-          '<li class="barra-fila"><span>' + esc(r.rama) + '</span><div class="barra-pista"><div class="barra-relleno" style="width:' + Math.round(r.cantidad / max * 100) + '%;background:' + colorRama(r.rama) + '"></div></div><b>' + r.cantidad + '</b></li>').join('') + '</ul>'
-          : '<p class="vacio">Todavía no hay ramas para mostrar.</p>') +
-      '</section>' +
-      '<section class="panel"><h2>Cumpleaños de los próximos 30 días</h2>' +
-        (d.cumples.length ? '<ul class="lista-simple">' + d.cumples.map(x =>
-          '<li><div><button type="button" class="enlace" data-abrir="' + esc(x.ID) + '">' + esc(x.nombre) + '</button><small>' + esc(x.rama) + ', cumple ' + x.cumple + '</small></div><div><strong>' + x.dia + ' de ' + MESES[x.mes - 1] + '</strong><small style="text-align:right">' + cuando(x.dias) + '</small></div></li>').join('') + '</ul>'
-          : '<p class="vacio">No hay cumpleaños en las próximas semanas.</p>') +
-      '</section>' +
-      '<section class="panel" style="grid-column:1/-1"><h2>Fichas por completar</h2>' +
-        (d.incompletas.length ? '<ul class="lista-simple">' + d.incompletas.map(x =>
-          '<li><div><button type="button" class="enlace" data-abrir="' + esc(x.ID) + '">' + esc(x.nombre) + '</button><small>' + esc(x.rama) + '</small></div><div><small style="text-align:right">' + x.faltan.map(esc).join('<br>') + '</small></div></li>').join('') + '</ul>' +
-          (d.incompletasTotal > d.incompletas.length ? '<p class="vacio" style="margin-top:10px">Y ' + (d.incompletasTotal - d.incompletas.length) + ' más en la lista de integrantes.</p>' : '')
-          : '<p class="vacio">Todas las fichas activas tienen sus autorizaciones al día.</p>') +
-      '</section>' +
-    '</div>';
-  const n = $('#i-nueva'); if (n) n.onclick = () => abrirMiembro(null);
-  c.onclick = async e => {
-    const b = e.target.closest('[data-abrir]');
-    if (!b) return;
-    try { const l = await cargarMiembros(); const m = l.find(x => x.ID === b.dataset.abrir); if (m) abrirMiembro(m); } catch (er) { manejarError(er); }
-  };
-}
-
-/* ---------- Vista: Integrantes ---------- */
-async function vistaIntegrantes() {
-  await cargarMiembros(true);
-  const c = $('#principal');
-  const p = S.permisos;
-  c.innerHTML =
-    '<div class="cabecera-vista"><div><h1>Integrantes</h1><p class="suave" id="i-conteo"></p></div><div class="acciones-fila">' +
-      (p.exportar ? '<button class="btn" type="button" id="i-export">' + ico('bajar') + 'Exportar CSV</button>' : '') +
-      (p.crear ? '<button class="btn btn-primario" type="button" id="i-nueva">' + ico('plus') + 'Nueva ficha</button>' : '') +
-    '</div></div>' +
-    '<div class="herramientas">' +
-      '<div class="buscar">' + ico('buscar') + '<input id="i-q" type="search" placeholder="Buscar por nombre, documento o código" aria-label="Buscar integrantes" autocomplete="off"></div>' +
-      '<select id="i-rama" aria-label="Filtrar por rama"><option value="">Todas las ramas</option>' + S.ramas.map(r => '<option value="' + esc(r.Nombre) + '">' + esc(r.Nombre) + '</option>').join('') + '</select>' +
-      '<select id="i-estado" aria-label="Filtrar por estado"><option value="Activo">Activos</option><option value="Inactivo">De baja</option><option value="">Todos</option></select>' +
-      '<select id="i-tipo" aria-label="Filtrar por tipo de persona"><option value="">Beneficiarios y adultos</option><option value="Beneficiario">Beneficiarios</option><option value="Adulto">Adultos</option></select>' +
-      '<select id="i-rol" aria-label="Filtrar por rol"><option value="">Todos los roles</option>' + S.roles.map(r => '<option value="' + esc(r.Nombre) + '">' + esc(r.Nombre) + '</option>').join('') + '</select>' +
-      (S.permisos.todosGrupos ? '<select id="i-grupo" aria-label="Filtrar por grupo"><option value="">Todos los grupos</option>' + S.grupos.map(g => '<option value="' + esc(g.Nombre) + '">' + esc(g.Nombre) + '</option>').join('') + '</select>' : '') +
-    '</div>' +
-    '<div id="lista"></div>';
-  $('#i-q').value = S.filtros.q; $('#i-rama').value = S.filtros.rama; $('#i-estado').value = S.filtros.estado; $('#i-tipo').value = S.filtros.tipo; $('#i-rol').value = S.filtros.rol;
-  const ig = $('#i-grupo'); if (ig) { ig.value = S.filtros.grupo; ig.onchange = e => { S.filtros.grupo = e.target.value; S.limite = 60; renderLista(); }; }
-  $('#i-rol').onchange = e => { S.filtros.rol = e.target.value; S.limite = 60; renderLista(); };
-  $('#i-tipo').onchange = e => { S.filtros.tipo = e.target.value; S.limite = 60; renderLista(); };
-  $('#i-q').oninput = e => { S.filtros.q = e.target.value; S.limite = 60; renderLista(); };
-  $('#i-rama').onchange = e => { S.filtros.rama = e.target.value; S.limite = 60; renderLista(); };
-  $('#i-estado').onchange = e => { S.filtros.estado = e.target.value; S.limite = 60; renderLista(); };
-  const n = $('#i-nueva'); if (n) n.onclick = () => abrirMiembro(null);
-  const ex = $('#i-export'); if (ex) ex.onclick = exportarCsv;
-  $('#lista').onclick = e => {
-    if (e.target.closest('a')) return;
-    if (e.target.closest('[data-mas]')) { S.limite += 60; renderLista(); return; }
-    const t = e.target.closest('[data-id]');
-    if (t) { const m = S.miembros.find(x => x.ID === t.dataset.id); if (m) abrirMiembro(m); }
-  };
-  renderLista();
-}
-
-function renderLista() {
-  const f = S.filtros, q = norm(f.q);
-  const l = S.miembros.filter(m => (!f.rama || m.Rama === f.rama) && (!f.estado || m.Estado === f.estado) && (!f.tipo || m.Tipo === f.tipo) && (!f.grupo || m.Grupo === f.grupo) && (!f.rol || m.Rol_Scout === f.rol) &&
-    (!q || norm([m.Apellidos, m.Nombres, m.Nro_Documento, m.ID, m.Rol_Scout, m.Parroquia, m.Distrito_Decanato].join(' ')).indexOf(q) >= 0))
-    .sort((a, b) => (a.Apellidos + a.Nombres).localeCompare(b.Apellidos + b.Nombres, 'es'));
-  $('#i-conteo').textContent = l.length + (l.length === 1 ? ' ficha' : ' fichas');
-  if (!l.length) {
-    $('#lista').innerHTML = '<div class="panel"><p class="vacio">' + (S.miembros.length ? 'No hay fichas que coincidan con la búsqueda.' : 'Todavía no hay fichas cargadas. ' + (S.permisos.crear ? 'Usar “Nueva ficha” para cargar la primera.' : '')) + '</p></div>';
-    return;
-  }
-  const visibles = l.slice(0, S.limite);
-  $('#lista').innerHTML =
-    '<div class="tabla-caja"><table class="tabla"><thead><tr><th>Integrante</th><th>Rol</th><th>Rama</th><th>Edad</th><th>Documento</th><th>Contacto</th><th>Estado</th></tr></thead><tbody>' +
-    visibles.map(m => {
-      const tel = m.Resp_Telefono || m.Telefono || m.Emergencia_Telefono || '';
-      const e = edadDe(m.Fecha_Nacimiento);
-      return '<tr class="clic" data-id="' + esc(m.ID) + '">' +
-        '<td class="celda-nombre" data-label="Integrante"><button type="button" class="enlace" data-abrir="' + esc(m.ID) + '">' + esc(m.Apellidos) + ', ' + esc(m.Nombres) + '</button><small>' + esc(m.ID) + ' · ' + (m.Tipo === 'Adulto' ? 'Adulto' : 'Beneficiario') + (m.Grupo ? ' · ' + esc(m.Grupo) : '') + (m.Parroquia ? ' · ' + esc(m.Parroquia) : '') + '</small></td>' +
-        '<td data-label="Rol">' + (m.Rol_Scout ? '<strong>' + esc(m.Rol_Scout) + '</strong>' : '<span class="suave">Sin rol</span>') + '</td>' +
-        '<td data-label="Rama">' + (m.Rama ? chipRama(m.Rama) : '<span class="suave">—</span>') + '</td>' +
-        '<td data-label="Edad">' + (e === null ? '' : e + ' años') + '</td>' +
-        '<td data-label="Documento">' + esc(m.Tipo_Documento) + ' ' + esc(m.Nro_Documento) + '</td>' +
-        '<td data-label="Contacto">' + (tel ? '<a href="tel:' + esc(tel.replace(/[^0-9+]/g, '')) + '">' + esc(tel) + '</a>' : '') + '</td>' +
-        '<td data-label="Estado"><span class="' + (m.Estado === 'Inactivo' ? 'estado-baja' : 'estado-alta') + '">' + (m.Estado === 'Inactivo' ? 'De baja' : 'Activo') + '</span></td></tr>';
-    }).join('') + '</tbody></table></div>' +
-    (l.length > visibles.length ? '<div class="pie-lista"><span>Mostrando ' + visibles.length + ' de ' + l.length + '</span><button type="button" class="btn" data-mas>Mostrar más</button></div>' : '');
-}
-
-async function exportarCsv() {
-  try {
-    const r = await api('miembros:exportar');
-    const blob = new Blob(['\ufeff' + r.csv], { type: 'text/csv;charset=utf-8' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = r.nombre;
-    document.body.appendChild(a); a.click();
-    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 800);
-    toast('Archivo listo: ' + r.nombre);
-  } catch (e) { manejarError(e); }
-}
-
-/* ---------- Formulario de ficha ---------- */
-const TABS = [{ id: 'personal', t: 'Datos personales' }, { id: 'contacto', t: 'Contacto y familia' }, { id: 'salud', t: 'Salud' }, { id: 'autoriz', t: 'Autorizaciones' }];
-const AYUDA_RESP = 'Obligatorio para menores de 18 años.';
-const CAMPOS = [
-  { n: 'Tipo', l: 'Tipo de persona', t: 'select', tab: 'personal', req: 1, lista: 'Tipo', def: 'Beneficiario' },
-  { n: 'Grupo', l: 'Grupo scout', t: 'select', tab: 'personal', req: 1, fuente: 'grupos' },
-  { n: 'Parroquia', l: 'Parroquia a la que pertenece', tab: 'personal', req: 1 },
-  { n: 'Distrito_Decanato', l: 'Distrito o decanato', tab: 'personal', req: 1 },
-  { n: 'Rama', l: 'Rama', t: 'select', tab: 'personal', fuente: 'ramas', ayuda: 'Obligatoria para beneficiarios.' },
-  { n: 'Rol_Scout', l: 'Rol', t: 'select', tab: 'personal', req: 1, fuente: 'roles', ayuda: 'Beneficiarios: lobato, scout, raider, rover. Adultos: jefe de rama, jefe de grupo, etc.' },
-  { n: 'Estado', l: 'Estado', t: 'select', tab: 'personal', lista: 'Estado', def: 'Activo', ancho: 1 },
-  { n: 'Apellidos', l: 'Apellidos', tab: 'personal', req: 1 },
-  { n: 'Nombres', l: 'Nombres', tab: 'personal', req: 1 },
-  { n: 'Tipo_Documento', l: 'Tipo de documento', t: 'select', tab: 'personal', req: 1, lista: 'TipoDoc', def: 'DNI' },
-  { n: 'Nro_Documento', l: 'Número de documento', tab: 'personal', req: 1 },
-  { n: 'Fecha_Nacimiento', l: 'Fecha de nacimiento', t: 'date', tab: 'personal', req: 1, ayuda: ' ' },
-  { n: 'Genero', l: 'Género', t: 'select', tab: 'personal', lista: 'Genero', vacio: 1 },
-  { n: 'Direccion', l: 'Dirección', tab: 'personal', ancho: 1, max: 200 },
-  { n: 'Localidad', l: 'Localidad', tab: 'personal' },
-  { n: 'Telefono', l: 'Teléfono del integrante', t: 'tel', tab: 'contacto' },
-  { n: 'Email', l: 'Correo del integrante', t: 'email', tab: 'contacto' },
-  { sep: 'Madre, padre o responsable', tab: 'contacto' },
-  { n: 'Resp_Nombre', l: 'Nombre y apellido', tab: 'contacto', ayuda: AYUDA_RESP },
-  { n: 'Resp_Parentesco', l: 'Parentesco', tab: 'contacto' },
-  { n: 'Resp_Telefono', l: 'Teléfono', t: 'tel', tab: 'contacto', ayuda: AYUDA_RESP },
-  { n: 'Resp_Email', l: 'Correo electrónico', t: 'email', tab: 'contacto' },
-  { sep: 'Contacto de emergencia', tab: 'contacto' },
-  { n: 'Emergencia_Nombre', l: 'Nombre y apellido', tab: 'contacto', req: 1 },
-  { n: 'Emergencia_Telefono', l: 'Teléfono', t: 'tel', tab: 'contacto', req: 1 },
-  { n: 'Obra_Social', l: 'Obra social o cobertura', tab: 'salud' },
-  { n: 'Nro_Afiliado', l: 'Número de afiliado', tab: 'salud' },
-  { n: 'Grupo_Sanguineo', l: 'Grupo sanguíneo', t: 'select', tab: 'salud', lista: 'Sangre', vacio: 1 },
-  { n: 'Alergias', l: 'Alergias', t: 'area', tab: 'salud', ancho: 1 },
-  { n: 'Condiciones_Medicas', l: 'Condiciones médicas', t: 'area', tab: 'salud', ancho: 1 },
-  { n: 'Medicacion', l: 'Medicación habitual', t: 'area', tab: 'salud', ancho: 1 },
-  { n: 'Restricciones_Alimentarias', l: 'Restricciones alimentarias', t: 'area', tab: 'salud', ancho: 1 },
-  { n: 'Autoriza_Imagen', l: 'Uso de imagen (fotos y videos)', t: 'select', tab: 'autoriz', lista: 'SiNo', def: 'NO' },
-  { n: 'Autoriza_Salidas', l: 'Salidas y campamentos', t: 'select', tab: 'autoriz', lista: 'SiNo', def: 'NO' },
-  { n: 'Autoriza_Atencion_Medica', l: 'Atención médica de urgencia', t: 'select', tab: 'autoriz', lista: 'SiNo', def: 'NO' },
-  { n: 'Observaciones', l: 'Observaciones', t: 'area', tab: 'autoriz', ancho: 1 }
-];
-const CAMPOS_DATO = CAMPOS.filter(c => !c.sep);
-
-function htmlCampo(c) {
-  if (c.sep) return '<h3 class="sep">' + esc(c.sep) + '</h3>';
-  const id = 'f_' + c.n;
-  let ctl;
-  if (c.t === 'select') ctl = '<select id="' + id + '" name="' + c.n + '"></select>';
-  else if (c.t === 'area') ctl = '<textarea id="' + id + '" name="' + c.n + '" rows="3" maxlength="600"></textarea>';
-  else ctl = '<input id="' + id + '" name="' + c.n + '" type="' + (c.t || 'text') + '" maxlength="' + (c.max || 120) + '" autocomplete="off"' + (c.t === 'tel' ? ' inputmode="tel"' : '') + '>';
-  return '<div class="campo' + (c.ancho ? ' ancho' : '') + '"><label for="' + id + '">' + esc(c.l) + (c.req ? ' <span class="req" aria-hidden="true">*</span>' : '') + '</label>' + ctl +
-    (c.ayuda ? '<small class="ayuda" id="ayuda-' + c.n + '">' + esc(c.ayuda) + '</small>' : '') +
-    '<small class="error-campo" id="err-' + c.n + '" hidden></small></div>';
-}
-
-let formConstruido = false;
-function construirFormMiembro() {
-  if (formConstruido) return;
-  formConstruido = true;
-  const tl = $('#m-pestanas'), cuerpo = $('#m-cuerpo');
-  tl.innerHTML = TABS.map((t, i) => '<button type="button" role="tab" class="pestana" id="tab-' + t.id + '" data-tab="' + t.id + '" aria-selected="' + (i === 0) + '" aria-controls="panel-' + t.id + '">' + esc(t.t) + '</button>').join('');
-  TABS.forEach((t, i) => {
-    const p = document.createElement('div');
-    p.className = 'rejilla'; p.id = 'panel-' + t.id; p.setAttribute('role', 'tabpanel');
-    p.setAttribute('aria-labelledby', 'tab-' + t.id);
-    if (i) p.hidden = true;
-    p.innerHTML = (t.id === 'personal' ? htmlFoto() : '') + CAMPOS.filter(c => c.tab === t.id).map(htmlCampo).join('');
-    cuerpo.appendChild(p);
-  });
-  tl.addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) activarTab(b.dataset.tab); });
-  $('#f_Fecha_Nacimiento').addEventListener('input', actualizarEdad);
-  $('#f_Tipo').addEventListener('change', () => { repoblarRoles(); sugerirRol(); });
-  $('#f_Rama').addEventListener('change', sugerirRol);
-  $('#f_Grupo').addEventListener('change', autoUbicacion);
-  $('#foto-archivo').addEventListener('change', elegirFoto);
-  $('#form-miembro').addEventListener('submit', guardarMiembro);
-}
-
-/* Rol: la lista depende del tipo de persona y se sugiere según la rama */
-const ROL_POR_RAMA = { manada: 'Lobato', tropa: 'Scout', caminantes: 'Raider', rovers: 'Rover', rover: 'Rover' };
-function repoblarRoles() {
-  const el = $('#f_Rol_Scout'), actual = el.value;
-  llenarSelect(el, CAMPOS_DATO.find(c => c.n === 'Rol_Scout'), '');
-  if (Array.from(el.options).some(o => o.value === actual)) el.value = actual;
-}
-function sugerirRol() {
-  if ($('#f_Tipo').value !== 'Beneficiario') return;
-  const el = $('#f_Rol_Scout');
-  if (el.value || el.disabled) return;
-  const s = ROL_POR_RAMA[norm($('#f_Rama').value)];
-  if (s && Array.from(el.options).some(o => o.value === s)) el.value = s;
-}
-/* Parroquia y distrito: se proponen los de otra ficha del mismo grupo */
-async function autoUbicacion() {
-  const p = $('#f_Parroquia'), d = $('#f_Distrito_Decanato'), g = $('#f_Grupo').value;
-  if (!g || p.disabled || p.value || d.value) return;
-  try {
-    const l = await cargarMiembros();
-    const o = l.find(m => m.Grupo === g && m.Parroquia && m.Distrito_Decanato);
-    if (o && !p.value && !d.value) { p.value = o.Parroquia; d.value = o.Distrito_Decanato; }
-  } catch (e) { /* es solo una ayuda */ }
-}
-
-function activarTab(id) {
-  $$('.pestana').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === id ? 'true' : 'false'));
-  TABS.forEach(t => { $('#panel-' + t.id).hidden = t.id !== id; });
-}
-
-function actualizarEdad() {
-  const e = edadDe($('#f_Fecha_Nacimiento').value);
-  $('#ayuda-Fecha_Nacimiento').textContent = e === null ? ' ' : (e < 0 ? 'La fecha es posterior a hoy.' : 'Edad: ' + e + (e === 1 ? ' año' : ' años'));
-}
-
-function llenarSelect(el, c, actual) {
-  let vals;
-  if (c.fuente === 'ramas') {
-    vals = S.ramas.filter(r => r.Activa === 'SI').map(r => r.Nombre);
-    if (actual && vals.indexOf(actual) < 0) vals.push(actual);
-  } else if (c.fuente === 'grupos') {
-    vals = S.grupos.filter(g => g.Activo === 'SI' || g.Nombre === actual).map(g => g.Nombre);
-    if (actual && vals.indexOf(actual) < 0) vals.push(actual);
-  } else if (c.fuente === 'roles') {
-    const tipo = $('#f_Tipo').value || 'Beneficiario';
-    vals = S.roles.filter(r => r.Tipo === tipo && (r.Activo === 'SI' || r.Nombre === actual)).map(r => r.Nombre);
-    if (actual && vals.indexOf(actual) < 0) vals.push(actual);
-  } else vals = S.listas[c.lista] || [];
-  let h = '';
-  if (c.fuente === 'ramas') h += '<option value="">Elegir rama…</option>';
-  else if (c.fuente === 'roles') h += '<option value="">Elegir rol…</option>';
-  else if (c.fuente === 'grupos') h += '<option value="">Elegir grupo…</option>';
-  else if (c.vacio) h += '<option value="">Sin indicar</option>';
-  h += vals.map(v => '<option value="' + esc(v) + '">' + esc(etiqueta(v)) + '</option>').join('');
-  el.innerHTML = h;
-}
-
-/* Foto: se reduce en el navegador antes de enviarla */
-const cacheFotos = {};
-function htmlFoto() {
-  return '<div class="foto-caja" style="grid-column:1/-1"><div class="foto-marco" id="foto-marco">' + ico('camara', 32) + '</div>' +
-    '<div><label for="foto-archivo">Foto</label><input id="foto-archivo" type="file" accept="image/*"><small class="ayuda">Opcional. Se reduce sola antes de guardarse.</small><small class="error-campo" id="foto-error" hidden></small></div></div>';
-}
-function ponerFoto(src) {
-  $('#foto-marco').innerHTML = src ? '<img alt="Foto de la persona" src="' + src + '">' : ico('camara', 32);
-}
-function elegirFoto(e) {
-  const f = e.target.files && e.target.files[0];
-  const er = $('#foto-error'); er.hidden = true;
-  if (!f) return;
-  if (!/^image\//.test(f.type)) { er.textContent = 'Elegir un archivo de imagen.'; er.hidden = false; return; }
-  const img = new Image(), url = URL.createObjectURL(f);
-  img.onload = () => {
-    const k = Math.min(1, 480 / Math.max(img.width, img.height));
-    const cv = document.createElement('canvas');
-    cv.width = Math.max(1, Math.round(img.width * k)); cv.height = Math.max(1, Math.round(img.height * k));
-    const cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, cv.width, cv.height);
-    cx.drawImage(img, 0, 0, cv.width, cv.height);
-    URL.revokeObjectURL(url);
-    S.fotoNueva = cv.toDataURL('image/jpeg', 0.8);
-    ponerFoto(S.fotoNueva);
-  };
-  img.onerror = () => { URL.revokeObjectURL(url); er.textContent = 'No se pudo leer la imagen.'; er.hidden = false; };
-  img.src = url;
-}
-async function cargarFoto(m) {
-  const k = m.ID + ':' + m.Foto_ID;
-  try {
-    if (!cacheFotos[k]) cacheFotos[k] = (await api('miembros:foto', { ID: m.ID })).imagen;
-    if ($('#form-miembro').dataset.id === m.ID && !S.fotoNueva) ponerFoto(cacheFotos[k]);
-  } catch (e) { /* la foto es opcional */ }
-}
-
-function limpiarErrores() {
-  $('#m-error').hidden = true;
-  $$('#form-miembro [aria-invalid]').forEach(el => el.removeAttribute('aria-invalid'));
-  $$('#form-miembro .error-campo').forEach(el => { el.hidden = true; el.textContent = ''; });
-}
-function marcarError(c, msg) {
-  const el = $('#f_' + c.n); el.setAttribute('aria-invalid', 'true');
-  el.setAttribute('aria-describedby', 'err-' + c.n);
-  const er = $('#err-' + c.n); er.textContent = msg; er.hidden = false;
-}
-
-function abrirMiembro(m) {
-  const nuevo = !m, p = S.permisos, editable = nuevo ? p.crear : p.editar;
-  const f = $('#form-miembro');
-  f.dataset.id = m ? m.ID : '';
-  limpiarErrores();
-  $('#m-titulo').textContent = nuevo ? 'Nueva ficha' : m.Apellidos + ', ' + m.Nombres;
-  $('#m-sub').textContent = nuevo ? 'Completar los datos del integrante.' : 'Ficha ' + m.ID + (m.Fecha_Alta ? ', alta el ' + fechaLarga(m.Fecha_Alta) : '');
-  $('#m-leyenda').hidden = !editable;
-  CAMPOS_DATO.forEach(c => {
-    const el = $('#f_' + c.n);
-    let v = m ? (m[c.n] || '') : (c.def || '');
-    if (c.t === 'select') {
-      llenarSelect(el, c, v);
-      if (nuevo && (c.fuente === 'ramas' || c.fuente === 'grupos')) {
-        const ops = $$('option', el).filter(o => o.value);
-        if (ops.length === 1) v = ops[0].value;
-      }
-    }
-    el.value = v;
-    el.disabled = !editable || (c.n === 'Estado' && !p.baja) || (c.n === 'Grupo' && !p.todosGrupos);
-  });
-  $('#tab-salud').hidden = !p.salud;
-  if (nuevo) autoUbicacion();
-  activarTab('personal');
-  actualizarEdad();
-  S.fotoNueva = null; $('#foto-archivo').value = ''; $('#foto-archivo').disabled = !editable; ponerFoto('');
-  if (m && m.Foto_ID) cargarFoto(m);
-  $('#m-guardar').hidden = !editable;
-  const baja = $('#m-baja');
-  baja.hidden = nuevo || !p.baja;
-  if (!nuevo) baja.textContent = m.Estado === 'Inactivo' ? 'Reactivar' : 'Dar de baja';
-  $('#m-eliminar').hidden = nuevo || !p.eliminar;
-  baja.onclick = () => cambiarEstado(m);
-  $('#m-eliminar').onclick = () => eliminarMiembro(m);
-  abrir($('#dlg-miembro'));
-  $('#m-cuerpo').scrollTop = 0;
-}
-
-async function guardarMiembro(ev) {
-  ev.preventDefault();
-  limpiarErrores();
-  const datos = {};
-  let primero = null;
-  CAMPOS_DATO.forEach(c => {
-    if (c.tab === 'salud' && !S.permisos.salud) return;
-    datos[c.n] = $('#f_' + c.n).value.trim();
-  });
-  const falla = (c, msg) => { marcarError(c, msg); if (!primero) primero = c; };
-  CAMPOS_DATO.forEach(c => { if (c.req && !datos[c.n]) falla(c, 'Completar este campo.'); });
-  if (datos.Tipo === 'Beneficiario' && !datos.Rama) falla(CAMPOS_DATO.find(c => c.n === 'Rama'), 'Obligatoria para beneficiarios.');
-  const e = edadDe(datos.Fecha_Nacimiento);
-  if (e !== null && e < 0) falla(CAMPOS_DATO.find(c => c.n === 'Fecha_Nacimiento'), 'La fecha no puede ser futura.');
-  if (e !== null && e >= 0 && e < 18) {
-    ['Resp_Nombre', 'Resp_Telefono'].forEach(n => { if (!datos[n]) falla(CAMPOS_DATO.find(c => c.n === n), 'Obligatorio para menores de 18 años.'); });
-  }
-  if (primero) {
-    activarTab(primero.tab);
-    $('#f_' + primero.n).focus();
-    const b = $('#m-error'); b.textContent = 'Revisar los campos marcados.'; b.hidden = false;
-    return;
-  }
-  const btn = $('#m-guardar'); btn.disabled = true; btn.textContent = 'Guardando…';
-  try {
-    const r = await api('miembros:guardar', { ID: $('#form-miembro').dataset.id, datos: datos });
-    if (S.fotoNueva) {
-      try {
-        const fr = await api('miembros:foto:guardar', { ID: r.ID, imagen: S.fotoNueva });
-        r.Foto_ID = fr.Foto_ID; cacheFotos[r.ID + ':' + fr.Foto_ID] = S.fotoNueva;
-      } catch (ef) { toast('La ficha se guardó, pero la foto no: ' + ef.message, 'error'); }
-      S.fotoNueva = null;
-    }
-    reemplazarLocal(r);
-    $('#dlg-miembro').close();
-    toast('Ficha guardada');
-    refrescar();
-  } catch (er) {
-    if (er.code === 'SESION') manejarError(er);
-    else { const b = $('#m-error'); b.textContent = er.message; b.hidden = false; $('#m-cuerpo').scrollTop = 0; }
-  } finally { btn.disabled = false; btn.textContent = 'Guardar ficha'; }
-}
-
-function reemplazarLocal(r) {
-  if (!S.miembros) return;
-  const i = S.miembros.findIndex(x => x.ID === r.ID);
-  if (i >= 0) S.miembros[i] = r; else S.miembros.push(r);
-}
-function refrescar() {
-  if (S.vista === 'integrantes' && S.miembros) renderLista();
-  else irA(S.vista);
-}
-
-async function cambiarEstado(m) {
-  const baja = m.Estado !== 'Inactivo';
-  const ok = await confirmar(baja ? 'Dar de baja a ' + m.Nombres + ' ' + m.Apellidos : 'Reactivar la ficha',
-    baja ? 'La ficha se conserva, pero deja de contarse entre los integrantes activos. Se puede reactivar cuando haga falta.' : 'La ficha volverá a contarse entre los integrantes activos.',
-    baja ? 'Dar de baja' : 'Reactivar', baja);
-  if (!ok) return;
-  try {
-    const r = await api('miembros:estado', { ID: m.ID, Estado: baja ? 'Inactivo' : 'Activo' });
-    reemplazarLocal(r); $('#dlg-miembro').close(); toast(baja ? 'Ficha dada de baja' : 'Ficha reactivada'); refrescar();
-  } catch (e) { manejarError(e); }
-}
-
-async function eliminarMiembro(m) {
-  const ok = await confirmar('Eliminar la ficha de ' + m.Nombres + ' ' + m.Apellidos,
-    'Se borrarán todos sus datos de la hoja de cálculo y no se puede deshacer. Para conservarlos, usar “Dar de baja”.', 'Eliminar definitivamente', true);
-  if (!ok) return;
-  try {
-    await api('miembros:eliminar', { ID: m.ID });
-    S.miembros = S.miembros.filter(x => x.ID !== m.ID);
-    $('#dlg-miembro').close(); toast('Ficha eliminada'); refrescar();
-  } catch (e) { manejarError(e); }
-}
-
-/* ---------- Vista: Usuarios ---------- */
-async function vistaUsuarios() {
-  S.usuarios = await api('usuarios:listar');
-  const c = $('#principal');
-  c.innerHTML =
-    '<div class="cabecera-vista"><div><h1>Usuarios</h1><p class="suave">Quién puede ingresar y qué puede hacer.</p></div><button class="btn btn-primario" type="button" id="u-nuevo">' + ico('plus') + 'Nuevo usuario</button></div>' +
-    '<div class="tabla-caja" style="margin-bottom:18px"><table class="tabla"><thead><tr><th>Usuario</th><th>Rol</th><th>Grupo</th><th>Ramas</th><th>Estado</th><th>Último ingreso</th><th><span style="position:absolute;left:-9999px">Acciones</span></th></tr></thead><tbody>' +
-    S.usuarios.map(u =>
-      '<tr><td class="celda-nombre" data-label="Usuario"><strong>' + esc(u.Nombre) + '</strong><small>' + esc(u.Usuario) + '</small></td>' +
-      '<td data-label="Rol">' + esc(ROL_NOMBRE[u.Rol] || u.Rol) + '</td>' +
-      '<td data-label="Grupo">' + esc(u.Grupo || (u.Rol === 'ADMIN' ? 'Todos' : '')) + '</td>' +
-      '<td data-label="Ramas">' + (u.Rol === 'ADMIN' || u.Rol === 'COORDINADOR' ? 'Todas' : esc((u.Ramas || '').split(',').join(', '))) + '</td>' +
-      '<td data-label="Estado"><span class="' + (u.Activo === 'SI' ? 'estado-alta' : 'estado-baja') + '">' + (u.Activo === 'SI' ? 'Activa' : 'Desactivada') + '</span></td>' +
-      '<td data-label="Último ingreso">' + (u.Ultimo_Acceso ? esc(u.Ultimo_Acceso.slice(0, 16)) : 'Nunca') + '</td>' +
-      '<td class="celda-acciones"><div class="acciones-fila"><button type="button" class="btn btn-chico" data-editar="' + esc(u.Usuario) + '">Editar</button><button type="button" class="btn btn-chico" data-reset="' + esc(u.Usuario) + '">Restablecer contraseña</button></div></td></tr>').join('') +
-    '</tbody></table></div>' +
-    '<section class="panel"><h2>Qué puede hacer cada rol</h2><dl class="roles">' +
-    Object.keys(ROLES_INFO).map(k => '<dt>' + esc(ROL_NOMBRE[k]) + '</dt><dd>' + esc(ROLES_INFO[k]) + '</dd>').join('') + '</dl></section>';
-  $('#u-nuevo').onclick = () => abrirUsuario(null);
-  c.onclick = async e => {
-    const ed = e.target.closest('[data-editar]'), rs = e.target.closest('[data-reset]');
-    if (ed) abrirUsuario(S.usuarios.find(u => u.Usuario === ed.dataset.editar));
-    if (rs) {
-      const ok = await confirmar('Restablecer contraseña', 'Se generará una contraseña temporal para ' + rs.dataset.reset + ', se la enviaremos por correo y la actual dejará de funcionar.', 'Restablecer', false);
-      if (!ok) return;
-      try { resultadoClave(await api('usuarios:reset', { Usuario: rs.dataset.reset })); } catch (er) { manejarError(er); }
-    }
-  };
-}
-
-function abrirUsuario(u) {
-  const nuevo = !u;
-  $('#form-usuario').dataset.nuevo = nuevo ? '1' : '';
-  $('#us-error').hidden = true;
-  $('#us-titulo').textContent = nuevo ? 'Nuevo usuario' : 'Editar usuario';
-  $('#us_Usuario').value = u ? u.Usuario : ''; $('#us_Usuario').disabled = !nuevo; $('#us-usuario-caja').hidden = nuevo;
-  $('#us_Nombre').value = u ? u.Nombre : '';
-  $('#us_Email').value = u ? u.Email : '';
-  $('#us_Activo').value = u ? u.Activo : 'SI';
-  $('#us_Grupo').innerHTML = '<option value="">Elegir grupo…</option>' + S.grupos.map(g => '<option value="' + esc(g.Nombre) + '">' + esc(g.Nombre) + '</option>').join('');
-  $('#us_Grupo').value = u ? (u.Grupo || '') : '';
-  $('#us-persona-caja').hidden = !nuevo;
-  $('#us_Persona').innerHTML = '<option value="">Sin vincular</option>';
-  if (nuevo) {
-    cargarMiembros().then(l => {
-      const ad = l.filter(m => m.Tipo === 'Adulto' && m.Estado !== 'Inactivo').sort((a, b) => (a.Apellidos + a.Nombres).localeCompare(b.Apellidos + b.Nombres, 'es'));
-      $('#us_Persona').innerHTML = '<option value="">Sin vincular</option>' + ad.map(m => '<option value="' + esc(m.ID) + '">' + esc(m.Apellidos + ', ' + m.Nombres + (m.Grupo ? ' (' + m.Grupo + ')' : '')) + '</option>').join('');
-      $('#us_Persona').onchange = () => {
-        const m = ad.find(x => x.ID === $('#us_Persona').value);
-        if (!m) return;
-        $('#us_Nombre').value = m.Nombres + ' ' + m.Apellidos; $('#us_Email').value = m.Email || ''; $('#us_Grupo').value = m.Grupo || '';
-      };
-    }).catch(() => {});
-  }
-  const esYo = u && u.Usuario === S.user.Usuario;
-  $('#us_Rol').innerHTML = S.listas.Rol.map(r => '<option value="' + r + '">' + esc(ROL_NOMBRE[r]) + '</option>').join('');
-  $('#us_Rol').value = u ? u.Rol : 'DIRIGENTE';
-  $('#us_Rol').disabled = !!esYo; $('#us_Activo').disabled = !!esYo;
-  const sel = u ? (u.Ramas || '').split(',') : [];
-  $('#us_Ramas').innerHTML = S.ramas.map((r, i) =>
-    '<label><input type="checkbox" value="' + esc(r.Nombre) + '"' + (sel.indexOf(r.Nombre) >= 0 ? ' checked' : '') + '>' + esc(r.Nombre) + '</label>').join('');
-  rolCambio();
-  $('#us_Rol').onchange = rolCambio;
-  abrir($('#dlg-usuario'));
-}
-function rolCambio() {
-  const r = $('#us_Rol').value;
-  $('#us_RolAyuda').textContent = ROLES_INFO[r] || '';
-  $('#us-ramas-caja').hidden = !(r === 'DIRIGENTE' || r === 'CONSULTA');
-  $('#us-grupo-caja').hidden = r === 'ADMIN';
-}
-
-async function guardarUsuario(ev) {
-  ev.preventDefault();
-  const err = $('#us-error'); err.hidden = true;
-  const datos = {
-    nuevo: !!$('#form-usuario').dataset.nuevo, Usuario: $('#us_Usuario').value, Nombre: $('#us_Nombre').value,
-    Rol: $('#us_Rol').value, Email: $('#us_Email').value, Activo: $('#us_Activo').value, Grupo: $('#us_Grupo').value, Miembro_ID: $('#us_Persona').value,
-    Ramas: $$('#us_Ramas input:checked').map(i => i.value)
-  };
-  const b = $('#us-guardar'); b.disabled = true;
-  try {
-    const r = await api('usuarios:guardar', datos);
-    $('#dlg-usuario').close();
-    toast('Usuario guardado');
-    if (r.enviado || r.claveTemporal) resultadoClave(r);
-    irA('usuarios');
-  } catch (e) {
-    if (e.code === 'SESION') manejarError(e); else { err.textContent = e.message; err.hidden = false; }
-  } finally { b.disabled = false; }
-}
-
-function resultadoClave(r) {
-  if (r.enviado) toast('Se envió la contraseña temporal a ' + (r.email || r.usuario));
-  else mostrarClave(r.usuario, r.claveTemporal);
-}
-function mostrarClave(usuario, clave) {
-  $('#k-usuario').textContent = usuario;
-  $('#k-clave').textContent = clave;
-  $('#k-copiar').textContent = 'Copiar';
-  abrir($('#dlg-clave-temp'));
-}
-async function copiarClave() {
-  const el = $('#k-clave');
-  try { await navigator.clipboard.writeText(el.textContent); $('#k-copiar').textContent = 'Copiada'; }
-  catch (e) {
-    const r = document.createRange(); r.selectNodeContents(el);
-    const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
-    $('#k-copiar').textContent = 'Seleccionada: copiar con el teclado';
-  }
-}
-
-/* ---------- Vista: Registro ---------- */
-async function vistaRegistro() {
-  const datos = await api('auditoria:listar');
-  const c = $('#principal');
-  c.innerHTML =
-    '<div class="cabecera-vista"><div><h1>Registro de actividad</h1><p class="suave">Las últimas ' + datos.length + ' acciones realizadas en el sistema.</p></div></div>' +
-    '<div class="herramientas"><div class="buscar">' + ico('buscar') + '<input id="r-q" type="search" placeholder="Filtrar por usuario, acción o ficha" aria-label="Filtrar el registro" autocomplete="off"></div></div>' +
-    '<div id="r-lista"></div>';
-  const pintar = () => {
-    const q = norm($('#r-q').value);
-    const l = datos.filter(x => !q || norm(Object.values(x).join(' ')).indexOf(q) >= 0);
-    $('#r-lista').innerHTML = l.length ?
-      '<div class="tabla-caja"><table class="tabla"><thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Sobre</th><th>Detalle</th></tr></thead><tbody>' +
-      l.map(x => '<tr><td data-label="Fecha">' + esc(x.Fecha) + '</td><td data-label="Usuario">' + esc(x.Usuario) + '</td><td data-label="Acción">' + esc(x.Accion) + '</td><td data-label="Sobre">' + esc(x.Entidad) + (x.Referencia ? ' ' + esc(x.Referencia) : '') + '</td><td data-label="Detalle">' + esc(x.Detalle) + '</td></tr>').join('') + '</tbody></table></div>'
-      : '<div class="panel"><p class="vacio">No hay registros que coincidan.</p></div>';
-  };
-  $('#r-q').oninput = pintar; pintar();
-}
-
-/* ---------- Vista: Ajustes ---------- */
-async function vistaAjustes() {
-  const c = $('#principal');
-  c.innerHTML =
-    '<div class="cabecera-vista"><div><h1>Ajustes</h1><p class="suave">Datos generales, grupos scouts y ramas.</p></div></div>' +
-    '<section class="panel"><h2>Nombre de la organización</h2><form id="form-grupo" class="con-boton" novalidate><input id="a-nombre" maxlength="80" aria-label="Nombre de la organización"><button class="btn btn-primario" type="submit">Guardar nombre</button></form></section>' +
-    '<section class="panel"><h2>Grupos scouts</h2><p class="suave" style="margin-bottom:14px">Cada grupo ve solo sus fichas, listas y finanzas. Un grupo desactivado no aparece al cargar fichas nuevas. El nombre no se puede cambiar una vez creado.</p><div class="tabla-caja"><table class="tabla ramas-editor"><thead><tr><th>Nombre</th><th>Localidad</th><th>Estado</th><th></th></tr></thead><tbody id="a-grupos"></tbody></table></div></section>' +
-    '<section class="panel"><h2>Roles scouts</h2><p class="suave" style="margin-bottom:14px">Los roles que se eligen al cargar una persona. Los de beneficiarios (lobato, scout, raider, rover) y los de adultos (jefe de rama, jefe de grupo, auxiliar diocesano, etc.) se agregan acá. El nombre y el tipo no se pueden cambiar una vez creados; un rol desactivado no aparece en fichas nuevas.</p><div class="tabla-caja"><table class="tabla ramas-editor"><thead><tr><th>Nombre</th><th>Tipo</th><th>Estado</th><th></th></tr></thead><tbody id="a-roles"></tbody></table></div></section>' +
-    '<section class="panel"><h2>Ramas</h2><p class="suave" style="margin-bottom:14px">Una rama desactivada no aparece al cargar fichas nuevas, pero conserva sus integrantes. El nombre no se puede cambiar una vez creada.</p><div class="tabla-caja"><table class="tabla ramas-editor"><thead><tr><th>Nombre</th><th>Edad desde</th><th>Edad hasta</th><th>Estado</th><th></th></tr></thead><tbody id="a-ramas"></tbody></table></div></section>';
-  $('#a-nombre').value = S.config.NOMBRE_GRUPO;
-  const pintarGrupos = () => {
-    const filas = S.grupos.map(g => ({ n: g.Nombre, loc: g.Localidad, act: g.Activo, nueva: false }));
-    filas.push({ n: '', loc: '', act: 'SI', nueva: true });
-    $('#a-grupos').innerHTML = filas.map((g, i) =>
-      '<tr data-i="' + i + '"><td data-label="Nombre">' + (g.nueva ? '<input data-k="n" placeholder="Nombre del nuevo grupo" aria-label="Nombre del nuevo grupo" maxlength="60">' : '<strong>' + esc(g.n) + '</strong>') + '</td>' +
-      '<td data-label="Localidad"><input data-k="loc" value="' + esc(g.loc) + '" aria-label="Localidad" maxlength="80"></td>' +
-      '<td data-label="Estado"><select data-k="act" aria-label="Estado del grupo"><option value="SI"' + (g.act === 'SI' ? ' selected' : '') + '>Activo</option><option value="NO"' + (g.act === 'NO' ? ' selected' : '') + '>Desactivado</option></select></td>' +
-      '<td class="celda-acciones"><button type="button" class="btn btn-chico' + (g.nueva ? ' btn-primario' : '') + '" data-guardar="' + i + '">' + (g.nueva ? 'Agregar grupo' : 'Guardar') + '</button></td></tr>').join('');
-  };
-  pintarGrupos();
-  $('#a-grupos').onclick = async e => {
-    const b = e.target.closest('[data-guardar]'); if (!b) return;
-    const tr = b.closest('tr'), ex = S.grupos[+tr.dataset.i];
-    const val = k => $('[data-k="' + k + '"]', tr);
-    try {
-      S.grupos = await api('grupos:guardar', { Nombre: ex ? ex.Nombre : val('n').value, Localidad: val('loc').value, Activo: val('act').value });
-      toast('Grupo guardado'); pintarGrupos();
-    } catch (er) { manejarError(er); }
-  };
-  $('#form-grupo').onsubmit = async e => {
-    e.preventDefault();
-    try { S.config = await api('config:guardar', { NOMBRE_GRUPO: $('#a-nombre').value }); poneNombreGrupo(); toast('Nombre guardado'); } catch (er) { manejarError(er); }
-  };
-  const pintarRoles = () => {
-    const filas = S.roles.map(r => ({ n: r.Nombre, tipo: r.Tipo, act: r.Activo, nueva: false }));
-    filas.push({ n: '', tipo: 'Adulto', act: 'SI', nueva: true });
-    $('#a-roles').innerHTML = filas.map((r, i) =>
-      '<tr data-i="' + i + '"><td data-label="Nombre">' + (r.nueva ? '<input data-k="n" placeholder="Nombre del nuevo rol" aria-label="Nombre del nuevo rol" maxlength="60">' : '<strong>' + esc(r.n) + '</strong>') + '</td>' +
-      '<td data-label="Tipo">' + (r.nueva ? '<select data-k="tipo" aria-label="Tipo de rol"><option value="Adulto">Adulto</option><option value="Beneficiario">Beneficiario</option></select>' : esc(r.tipo)) + '</td>' +
-      '<td data-label="Estado"><select data-k="act" aria-label="Estado del rol"><option value="SI"' + (r.act === 'SI' ? ' selected' : '') + '>Activo</option><option value="NO"' + (r.act === 'NO' ? ' selected' : '') + '>Desactivado</option></select></td>' +
-      '<td class="celda-acciones"><button type="button" class="btn btn-chico' + (r.nueva ? ' btn-primario' : '') + '" data-guardar="' + i + '">' + (r.nueva ? 'Agregar rol' : 'Guardar') + '</button></td></tr>').join('');
-  };
-  pintarRoles();
-  $('#a-roles').onclick = async e => {
-    const b = e.target.closest('[data-guardar]'); if (!b) return;
-    const tr = b.closest('tr'), ex = S.roles[+tr.dataset.i];
-    const val = k => $('[data-k="' + k + '"]', tr);
-    try {
-      S.roles = await api('roles:guardar', { Nombre: ex ? ex.Nombre : val('n').value, Tipo: ex ? ex.Tipo : val('tipo').value, Activo: val('act').value });
-      toast('Rol guardado'); pintarRoles();
-    } catch (er) { manejarError(er); }
-  };
-  const pintarRamas = () => {
-    const filas = S.ramas.map(r => ({ n: r.Nombre, min: r.Edad_Min, max: r.Edad_Max, act: r.Activa, nueva: false }));
-    filas.push({ n: '', min: '', max: '', act: 'SI', nueva: true });
-    $('#a-ramas').innerHTML = filas.map((r, i) =>
-      '<tr data-i="' + i + '"><td data-label="Nombre">' + (r.nueva ? '<input data-k="n" placeholder="Nombre de la nueva rama" aria-label="Nombre de la nueva rama" maxlength="40">' : '<strong>' + esc(r.n) + '</strong>') + '</td>' +
-      '<td data-label="Edad desde"><input data-k="min" type="number" min="0" max="99" value="' + esc(r.min) + '" aria-label="Edad desde"></td>' +
-      '<td data-label="Edad hasta"><input data-k="max" type="number" min="0" max="99" value="' + esc(r.max) + '" aria-label="Edad hasta"></td>' +
-      '<td data-label="Estado"><select data-k="act" aria-label="Estado de la rama"><option value="SI"' + (r.act === 'SI' ? ' selected' : '') + '>Activa</option><option value="NO"' + (r.act === 'NO' ? ' selected' : '') + '>Desactivada</option></select></td>' +
-      '<td class="celda-acciones"><button type="button" class="btn btn-chico' + (r.nueva ? ' btn-primario' : '') + '" data-guardar="' + i + '">' + (r.nueva ? 'Agregar rama' : 'Guardar') + '</button></td></tr>').join('');
-  };
-  pintarRamas();
-  $('#a-ramas').onclick = async e => {
-    const b = e.target.closest('[data-guardar]'); if (!b) return;
-    const tr = b.closest('tr'), i = +tr.dataset.i, existente = S.ramas[i];
-    const val = k => $('[data-k="' + k + '"]', tr);
-    try {
-      S.ramas = await api('ramas:guardar', { Nombre: existente ? existente.Nombre : val('n').value, Edad_Min: val('min').value, Edad_Max: val('max').value, Activa: val('act').value });
-      toast('Rama guardada'); pintarRamas();
-    } catch (er) { manejarError(er); }
-  };
-}
-
-/* ---------- Descargas CSV ---------- */
-const csvC = v => {
-  let s = String(v == null ? '' : v);
-  if (/^[=@\t\r]/.test(s) || (/^[+\-]/.test(s) && !/^[+\-]?[\d\s()\-]+$/.test(s))) s = "'" + s;
-  return '"' + s.replace(/"/g, '""') + '"';
-};
-function bajarCsv(nombre, filas) {
-  const blob = new Blob(['\ufeff' + filas.map(f => f.map(csvC).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob); a.download = nombre;
-  document.body.appendChild(a); a.click();
-  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 800);
-}
-
-/* ---------- Vista: Eventos y listas ---------- */
-async function vistaEventos() {
-  S.eventos = await api('eventos:listar');
-  const p = S.permisos, c = $('#principal');
-  c.innerHTML =
-    '<div class="cabecera-vista"><div><h1>Eventos y listas</h1><p class="suave">Quiénes asisten a cada evento, por grupo scout.</p></div>' +
-    (p.eventosCrear ? '<button class="btn btn-primario" type="button" id="ev-nuevo">' + ico('plus') + 'Nuevo evento</button>' : '') + '</div>' +
-    (S.eventos.length ?
-      '<div class="tabla-caja"><table class="tabla"><thead><tr><th>Evento</th><th>Fecha</th><th>Lugar</th><th>Asistentes</th><th><span style="position:absolute;left:-9999px">Acciones</span></th></tr></thead><tbody>' +
-      S.eventos.map(e =>
-        '<tr><td class="celda-nombre" data-label="Evento"><strong>' + esc(e.Nombre) + '</strong></td>' +
-        '<td data-label="Fecha">' + esc(fechaLarga(e.Fecha)) + '</td><td data-label="Lugar">' + esc(e.Lugar) + '</td>' +
-        '<td data-label="Asistentes">' + e.asistentes + '</td>' +
-        '<td class="celda-acciones"><div class="acciones-fila"><button type="button" class="btn btn-chico" data-lista="' + esc(e.ID) + '">' + (p.editar ? 'Pasar lista' : 'Ver lista') + '</button>' +
-        (p.eventosCrear ? '<button type="button" class="btn btn-chico" data-editar-ev="' + esc(e.ID) + '">Editar</button>' : '') + '</div></td></tr>').join('') +
-      '</tbody></table></div>'
-      : '<div class="panel"><p class="vacio">Todavía no hay eventos cargados.' + (p.eventosCrear ? ' Usar “Nuevo evento” para crear el primero.' : '') + '</p></div>');
-  const n = $('#ev-nuevo'); if (n) n.onclick = () => abrirEvento(null);
-  c.onclick = e => {
-    const l = e.target.closest('[data-lista]'), ed = e.target.closest('[data-editar-ev]');
-    if (l) abrirLista(l.dataset.lista).catch(manejarError);
-    if (ed) abrirEvento(S.eventos.find(x => x.ID === ed.dataset.editarEv));
-  };
-}
-
-function abrirEvento(ev) {
-  $('#form-evento').dataset.id = ev ? ev.ID : '';
-  $('#ev-error').hidden = true;
-  $('#ev-titulo').textContent = ev ? 'Editar evento' : 'Nuevo evento';
-  $('#ev_Nombre').value = ev ? ev.Nombre : ''; $('#ev_Fecha').value = ev ? ev.Fecha : ''; $('#ev_Lugar').value = ev ? ev.Lugar : '';
-  abrir($('#dlg-evento'));
-}
-async function guardarEvento(e) {
-  e.preventDefault();
-  const err = $('#ev-error'); err.hidden = true;
-  const b = $('#ev-guardar'); b.disabled = true;
-  try {
-    await api('eventos:guardar', { ID: $('#form-evento').dataset.id, Nombre: $('#ev_Nombre').value, Fecha: $('#ev_Fecha').value, Lugar: $('#ev_Lugar').value });
-    $('#dlg-evento').close(); toast('Evento guardado'); irA('eventos');
-  } catch (er) { if (er.code === 'SESION') manejarError(er); else { err.textContent = er.message; err.hidden = false; } }
-  finally { b.disabled = false; }
-}
-
-const AS = { ev: null, asistentes: [], marc: {}, grupo: '' };
-async function abrirLista(id) {
-  const r = await api('asistencia:ver', { Evento_ID: id });
-  await cargarMiembros(true);
-  AS.ev = r.evento; AS.asistentes = r.asistentes; AS.marc = {};
-  const grupos = S.grupos.map(g => g.Nombre);
-  AS.grupo = grupos[0] || '';
-  $('#as-titulo').textContent = r.evento.Nombre;
-  $('#as-sub').textContent = fechaLarga(r.evento.Fecha) + (r.evento.Lugar ? ' · ' + r.evento.Lugar : '');
-  $('#as-grupo').innerHTML = grupos.map(g => '<option value="' + esc(g) + '">' + esc(g) + '</option>').join('');
-  $('#as-grupo-caja').hidden = grupos.length < 2;
-  $('#as-q').value = ''; $('#as-error').hidden = true;
-  $('#as-guardar').hidden = !S.permisos.editar;
-  $('#as-grupo').onchange = e => { AS.grupo = e.target.value; pintarLista(); };
-  $('#as-q').oninput = pintarLista;
-  $('#as-lista').onchange = e => {
-    const k = e.target.closest('[data-id]'); if (!k) return;
-    const set = marcados(); if (k.checked) set.add(k.dataset.id); else set.delete(k.dataset.id);
-    pintarConteo();
-  };
-  $('#as-guardar').onclick = guardarLista;
-  $('#as-csv').onclick = csvLista;
-  pintarLista();
-  abrir($('#dlg-asistencia'));
-}
-function marcados() {
-  if (!AS.marc[AS.grupo]) AS.marc[AS.grupo] = new Set(AS.asistentes.filter(a => a.Grupo === AS.grupo).map(a => a.Miembro_ID));
-  return AS.marc[AS.grupo];
-}
-function miembrosDelGrupo() {
-  return S.miembros.filter(m => m.Grupo === AS.grupo && m.Estado !== 'Inactivo')
-    .sort((a, b) => (a.Apellidos + a.Nombres).localeCompare(b.Apellidos + b.Nombres, 'es'));
-}
-function pintarConteo() {
-  $('#as-conteo').textContent = marcados().size + ' presentes de ' + miembrosDelGrupo().length + ' personas del grupo';
-}
-function pintarLista() {
-  const q = norm($('#as-q').value), set = marcados(), edit = S.permisos.editar;
-  const l = miembrosDelGrupo().filter(m => (edit || set.has(m.ID)) && (!q || norm(m.Apellidos + ' ' + m.Nombres).indexOf(q) >= 0));
-  $('#as-lista').innerHTML = l.length ? l.map(m =>
-    '<label class="check-fila"><input type="checkbox" data-id="' + esc(m.ID) + '"' + (set.has(m.ID) ? ' checked' : '') + (edit ? '' : ' disabled') + '>' +
-    '<span>' + esc(m.Apellidos) + ', ' + esc(m.Nombres) + '</span><small>' + esc(m.Rol_Scout || (m.Tipo === 'Adulto' ? 'Adulto' : 'Beneficiario')) + (m.Rama ? ' · ' + esc(m.Rama) : '') + '</small></label>').join('')
-    : '<p class="vacio">' + (edit ? 'No hay personas activas para mostrar en este grupo.' : 'Todavía no hay asistentes cargados.') + '</p>';
-  pintarConteo();
-}
-async function guardarLista() {
-  const err = $('#as-error'); err.hidden = true;
-  const b = $('#as-guardar'); b.disabled = true;
-  try {
-    const set = marcados(), grupo = AS.grupo;
-    await api('asistencia:guardar', { Evento_ID: AS.ev.ID, Grupo: grupo, ids: Array.from(set) });
-    AS.asistentes = AS.asistentes.filter(a => a.Grupo !== grupo || !miembrosDelGrupo().some(m => m.ID === a.Miembro_ID))
-      .concat(miembrosDelGrupo().filter(m => set.has(m.ID)).map(m => ({ Miembro_ID: m.ID, Grupo: grupo, Apellidos: m.Apellidos, Nombres: m.Nombres, Tipo: m.Tipo, Rama: m.Rama, Rol_Scout: m.Rol_Scout })));
-    toast('Lista guardada: ' + set.size + ' presentes');
-    Promise.resolve(vistaEventos()).catch(() => {});
-  } catch (er) { if (er.code === 'SESION') manejarError(er); else { err.textContent = er.message; err.hidden = false; } }
-  finally { b.disabled = false; }
-}
-function csvLista() {
-  const filas = [['Evento', 'Fecha', 'Grupo', 'Apellidos', 'Nombres', 'Tipo', 'Rol', 'Rama']];
-  AS.asistentes.slice().sort((a, b) => (a.Grupo + a.Apellidos + a.Nombres).localeCompare(b.Grupo + b.Apellidos + b.Nombres, 'es'))
-    .forEach(a => filas.push([AS.ev.Nombre, AS.ev.Fecha, a.Grupo, a.Apellidos, a.Nombres, a.Tipo, a.Rol_Scout, a.Rama]));
-  bajarCsv('lista_' + norm(AS.ev.Nombre).replace(/[^a-z0-9]+/g, '_').slice(0, 40) + '_' + AS.ev.Fecha + '.csv', filas);
-}
-
-/* ---------- Vista: Finanzas ---------- */
-const pesos = n => '$ ' + Number(n || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-function textoSaldo(s) { return s > 0 ? 'Saldo a pagar' : s < 0 ? 'Saldo a favor' : 'Al día'; }
-function claseSaldo(s) { return s > 0 ? 'saldo-debe' : s < 0 ? 'saldo-favor' : ''; }
-
-let FIN = null, DET = null;
-const textoDesc = d => d.Tipo_Desc === 'Porcentaje' ? String(d.Valor).replace('.', ',') + ' %' : pesos(d.Valor);
-const textoAlcance = d => d.Alcance === 'Persona' ? d.DestinoTexto : d.Alcance === 'Rol' ? 'Rol: ' + d.Destino : 'Grupo: ' + d.Destino;
-
-async function vistaFinanzas() {
-  const d = FIN = await api('finanzas:estado');
-  const p = S.permisos, c = $('#principal');
-  const uno = d.resumen.length === 1 ? d.resumen[0] : null;
-  const compo = r => '<ul class="lista-simple">' +
-    '<li><span>Personas en la nómina activa</span><strong>' + r.personas + '</strong></li>' +
-    '<li><span>Valor de los aranceles por persona</span><strong class="monto">' + pesos(r.bruto) + '</strong></li>' +
-    '<li><span>Descuentos</span><strong class="monto">− ' + pesos(r.descuentos) + '</strong></li>' +
-    '<li><span>Aranceles a pagar</span><strong class="monto">' + pesos(r.aranceles) + '</strong></li>' +
-    '<li><span>Otros cargos</span><strong class="monto">' + pesos(r.otrosCargos) + '</strong></li></ul>';
-  const aranceles = d.aranceles.filter(a => p.finanzasEditar || a.Activo === 'SI');
-  c.innerHTML =
-    '<div class="cabecera-vista"><div><h1>Finanzas</h1><p class="suave">' + (uno ? 'Estado de cuenta de ' + esc(uno.Grupo) : 'Estado de cuenta de cada grupo scout') + '</p></div>' +
-    (uno ? '<button type="button" class="btn" data-detalle="' + esc(uno.Grupo) + '">Ver detalle por persona</button>' : '') + '</div>' +
-    (uno ?
-      '<div class="cifras"><div class="cifra"><b>' + pesos(uno.cargos) + '</b><span>Cargos (aranceles y otros)</span></div><div class="cifra"><b>' + pesos(uno.pagos) + '</b><span>Pagos</span></div>' +
-      '<div class="cifra"><b class="' + claseSaldo(uno.saldo) + '">' + pesos(Math.abs(uno.saldo)) + '</b><span>' + textoSaldo(uno.saldo) + '</span></div></div>' +
-      '<section class="panel"><h2>Cómo se calcula lo que debe el grupo</h2>' + compo(uno) + '</section>'
-      : '<div class="tabla-caja" style="margin-bottom:18px"><table class="tabla"><thead><tr><th>Grupo</th><th>Nómina</th><th>Aranceles</th><th>Otros cargos</th><th>Pagos</th><th>Estado</th><th></th></tr></thead><tbody>' +
-        (d.resumen.length ? d.resumen.map(r => '<tr><td class="celda-nombre" data-label="Grupo"><strong>' + esc(r.Grupo) + '</strong></td><td class="monto" data-label="Nómina">' + r.personas + ' personas</td>' +
-          '<td class="monto" data-label="Aranceles">' + pesos(r.aranceles) + (r.descuentos ? '<small>con ' + pesos(r.descuentos) + ' de descuento</small>' : '') + '</td>' +
-          '<td class="monto" data-label="Otros cargos">' + pesos(r.otrosCargos) + '</td><td class="monto" data-label="Pagos">' + pesos(r.pagos) + '</td>' +
-          '<td class="monto ' + claseSaldo(r.saldo) + '" data-label="Estado"><strong>' + pesos(Math.abs(r.saldo)) + '</strong> <small>' + textoSaldo(r.saldo) + '</small></td>' +
-          '<td class="celda-acciones"><button type="button" class="btn btn-chico" data-detalle="' + esc(r.Grupo) + '">Ver detalle</button></td></tr>').join('') : '<tr><td colspan="7" class="vacio">Todavía no hay grupos cargados.</td></tr>') +
-        '</tbody></table></div>') +
-    '<section class="panel"><div class="panel-cab"><h2>Aranceles: valor a pagar por persona</h2>' +
-      (p.finanzasEditar ? '<button type="button" class="btn btn-primario btn-chico" data-ar-nuevo>' + ico('plus', 16) + 'Nuevo arancel</button>' : '') + '</div>' +
-      (aranceles.length ?
-        '<div class="tabla-caja"><table class="tabla"><thead><tr><th>Concepto</th><th>Fecha</th><th>Por beneficiario</th><th>Por adulto</th><th>Estado</th>' + (p.finanzasEditar ? '<th></th>' : '') + '</tr></thead><tbody>' +
-        aranceles.map(a => '<tr><td class="celda-nombre" data-label="Concepto"><strong>' + esc(a.Concepto) + '</strong></td><td data-label="Fecha">' + (a.Fecha ? esc(fechaLarga(a.Fecha)) : '') + '</td>' +
-          '<td class="monto" data-label="Por beneficiario">' + pesos(a.Valor_Beneficiario) + '</td><td class="monto" data-label="Por adulto">' + pesos(a.Valor_Adulto) + '</td>' +
-          '<td data-label="Estado"><span class="' + (a.Activo === 'SI' ? 'estado-alta' : 'estado-baja') + '">' + (a.Activo === 'SI' ? 'Vigente' : 'Desactivado') + '</span></td>' +
-          (p.finanzasEditar ? '<td class="celda-acciones"><div class="acciones-fila"><button type="button" class="btn btn-chico" data-ar-editar="' + esc(a.ID) + '">Editar</button><button type="button" class="btn btn-chico btn-peligro" data-ar-borrar="' + esc(a.ID) + '">Eliminar</button></div></td>' : '') + '</tr>').join('') + '</tbody></table></div>' +
-        '<p class="leyenda nota-calculo">Cada grupo debe el valor de cada arancel vigente multiplicado por las personas activas de su nómina, menos los descuentos.</p>'
-        : '<p class="vacio">Todavía no hay aranceles cargados.' + (p.finanzasEditar ? ' Usar “Nuevo arancel” para cargar el primero.' : '') + '</p>') +
-    '</section>' +
-    '<section class="panel"><div class="panel-cab"><h2>Descuentos</h2>' +
-      (p.finanzasEditar ? '<button type="button" class="btn btn-primario btn-chico" data-ds-nuevo>' + ico('plus', 16) + 'Nuevo descuento</button>' : '') + '</div>' +
-      (d.descuentos.length ?
-        '<div class="tabla-caja"><table class="tabla"><thead><tr><th>Se aplica a</th><th>Arancel</th><th>Descuento</th><th>Motivo</th>' + (p.finanzasEditar ? '<th></th>' : '') + '</tr></thead><tbody>' +
-        d.descuentos.map(x => '<tr><td class="celda-nombre" data-label="Se aplica a"><strong>' + esc(textoAlcance(x)) + '</strong></td><td data-label="Arancel">' + esc(x.Arancel) + '</td>' +
-          '<td class="monto" data-label="Descuento">' + esc(textoDesc(x)) + '</td><td data-label="Motivo">' + esc(x.Motivo) + '</td>' +
-          (p.finanzasEditar ? '<td class="celda-acciones"><div class="acciones-fila"><button type="button" class="btn btn-chico" data-ds-editar="' + esc(x.ID) + '">Editar</button><button type="button" class="btn btn-chico btn-peligro" data-ds-borrar="' + esc(x.ID) + '">Eliminar</button></div></td>' : '') + '</tr>').join('') + '</tbody></table></div>' +
-        '<p class="leyenda nota-calculo">Si una persona tiene varios descuentos, los porcentajes se suman (hasta 100 %) y los montos fijos también; nunca se descuenta más que el valor del arancel.</p>'
-        : '<p class="vacio">No hay descuentos cargados.</p>') +
-    '</section>' +
-    (p.finanzasEditar ?
-      '<section class="panel"><h2>Registrar otro cargo o un pago</h2><form id="form-mov" class="form-mov" novalidate>' +
-      '<div class="campo"><label for="mv_Grupo">Grupo</label><select id="mv_Grupo">' + S.grupos.map(g => '<option value="' + esc(g.Nombre) + '">' + esc(g.Nombre) + '</option>').join('') + '</select></div>' +
-      '<div class="campo"><label for="mv_Tipo">Tipo</label><select id="mv_Tipo"><option value="Cargo">Cargo (el grupo debe)</option><option value="Pago">Pago (el grupo pagó)</option></select></div>' +
-      '<div class="campo"><label for="mv_Concepto">Concepto</label><input id="mv_Concepto" maxlength="120" autocomplete="off"></div>' +
-      '<div class="campo"><label for="mv_Monto">Monto</label><input id="mv_Monto" inputmode="decimal" autocomplete="off"></div>' +
-      '<div class="campo"><label for="mv_Fecha">Fecha</label><input id="mv_Fecha" type="date"></div>' +
-      '<div class="campo"><button class="btn btn-primario ancho" type="submit" id="mv-guardar">Registrar</button></div>' +
-      '<p id="mv-error" class="msg-error" role="alert" hidden style="grid-column:1/-1"></p></form></section>' : '') +
-    '<section class="panel"><h2>Movimientos</h2><div id="mv-lista"></div></section>';
-  const pintar = () => {
-    const l = d.movimientos;
-    $('#mv-lista').innerHTML = l.length ?
-      '<div class="tabla-caja"><table class="tabla"><thead><tr><th>Fecha</th>' + (uno ? '' : '<th>Grupo</th>') + '<th>Tipo</th><th>Concepto</th><th>Monto</th>' + (p.finanzasEditar ? '<th></th>' : '') + '</tr></thead><tbody>' +
-      l.map(m => '<tr><td data-label="Fecha">' + esc(fechaLarga(m.Fecha)) + '</td>' + (uno ? '' : '<td data-label="Grupo">' + esc(m.Grupo) + '</td>') +
-        '<td data-label="Tipo"><span class="' + (m.Tipo === 'Pago' ? 'estado-alta' : 'estado-baja') + '">' + esc(m.Tipo) + '</span></td><td data-label="Concepto">' + esc(m.Concepto) + '</td>' +
-        '<td class="monto" data-label="Monto">' + pesos(m.Monto) + '</td>' +
-        (p.finanzasEditar ? '<td class="celda-acciones"><button type="button" class="btn btn-chico btn-peligro" data-borrar="' + esc(m.ID) + '">Eliminar</button></td>' : '') + '</tr>').join('') + '</tbody></table></div>'
-      : '<p class="vacio">Todavía no hay otros movimientos registrados.</p>';
-  };
-  pintar();
-  if (p.finanzasEditar) {
-    $('#mv_Fecha').value = new Date().toISOString().slice(0, 10);
-    $('#form-mov').onsubmit = async e => {
-      e.preventDefault();
-      const err = $('#mv-error'); err.hidden = true;
-      const b = $('#mv-guardar'); b.disabled = true;
-      try {
-        await api('finanzas:guardar', { Grupo: $('#mv_Grupo').value, Tipo: $('#mv_Tipo').value, Concepto: $('#mv_Concepto').value, Monto: $('#mv_Monto').value, Fecha: $('#mv_Fecha').value });
-        toast('Movimiento registrado'); irA('finanzas');
-      } catch (er) { if (er.code === 'SESION') manejarError(er); else { err.textContent = er.message; err.hidden = false; } }
-      finally { b.disabled = false; }
-    };
-  }
-  c.onclick = async e => {
-    const q = a => e.target.closest('[' + a + ']');
-    try {
-      if (q('data-detalle')) return await abrirDetalle(q('data-detalle').dataset.detalle);
-      if (q('data-ar-nuevo')) return abrirArancel(null);
-      if (q('data-ar-editar')) return abrirArancel(FIN.aranceles.find(a => a.ID === q('data-ar-editar').dataset.arEditar));
-      if (q('data-ds-nuevo')) return abrirDescuento(null);
-      if (q('data-ds-editar')) return abrirDescuento(FIN.descuentos.find(x => x.ID === q('data-ds-editar').dataset.dsEditar));
-      if (q('data-ar-borrar')) {
-        const a = FIN.aranceles.find(x => x.ID === q('data-ar-borrar').dataset.arBorrar);
-        if (!await confirmar('Eliminar arancel', 'Se elimina “' + a.Concepto + '” y también sus descuentos. Lo que deben los grupos se recalcula. Para conservarlo sin contarlo, usar “Editar” y desactivarlo.', 'Eliminar', true)) return;
-        await api('aranceles:eliminar', { ID: a.ID }); toast('Arancel eliminado'); return irA('finanzas');
-      }
-      if (q('data-ds-borrar')) {
-        if (!await confirmar('Eliminar descuento', 'Lo que deben los grupos se recalcula sin este descuento.', 'Eliminar', true)) return;
-        await api('descuentos:eliminar', { ID: q('data-ds-borrar').dataset.dsBorrar }); toast('Descuento eliminado'); return irA('finanzas');
-      }
-      if (q('data-borrar')) {
-        if (!await confirmar('Eliminar movimiento', 'Se quita del estado de cuenta del grupo y no se puede deshacer.', 'Eliminar', true)) return;
-        await api('finanzas:eliminar', { ID: q('data-borrar').dataset.borrar }); toast('Movimiento eliminado'); irA('finanzas');
-      }
-    } catch (er) { manejarError(er); }
-  };
-}
-
-/* Detalle de lo que debe un grupo, persona por persona */
-async function abrirDetalle(grupo) {
-  const r = DET = await api('finanzas:detalle', { Grupo: grupo });
-  $('#dt-titulo').textContent = 'Detalle de ' + r.Grupo;
-  $('#dt-sub').textContent = r.nomina + (r.nomina === 1 ? ' persona activa en la nómina' : ' personas activas en la nómina');
-  $('#dt-cuerpo').innerHTML = r.aranceles.length ? r.aranceles.map(a =>
-    '<section class="bloque-arancel"><h3>' + esc(a.Concepto) + '</h3><p class="suave">' + a.lineas.length + ' personas · Valor ' + pesos(a.bruto) + ' · Descuentos ' + pesos(a.descuento) + ' · <strong>A pagar ' + pesos(a.neto) + '</strong></p>' +
-    '<div class="tabla-caja"><table class="tabla"><thead><tr><th>Persona</th><th>Valor</th><th>Descuento</th><th>A pagar</th></tr></thead><tbody>' +
-    a.lineas.map(l => '<tr><td class="celda-nombre" data-label="Persona"><strong>' + esc(l.Nombre) + '</strong><small>' + esc(l.Rol || l.Tipo) + '</small></td><td class="monto" data-label="Valor">' + pesos(l.Bruto) + '</td>' +
-      '<td class="monto" data-label="Descuento">' + (l.Descuento ? pesos(l.Descuento) : '—') + '</td><td class="monto" data-label="A pagar"><strong>' + pesos(l.Neto) + '</strong></td></tr>').join('') +
-    '</tbody></table></div></section>').join('')
-    : '<p class="vacio">Este grupo no tiene aranceles para pagar: no hay aranceles vigentes o no hay personas activas en la nómina.</p>';
-  $('#dt-csv').onclick = () => {
-    const filas = [['Grupo', 'Arancel', 'Persona', 'Tipo', 'Rol', 'Valor', 'Descuento', 'A pagar']];
-    r.aranceles.forEach(a => a.lineas.forEach(l => filas.push([r.Grupo, a.Concepto, l.Nombre, l.Tipo, l.Rol, l.Bruto, l.Descuento, l.Neto])));
-    bajarCsv('detalle_' + norm(r.Grupo).replace(/[^a-z0-9]+/g, '_').slice(0, 40) + '.csv', filas);
-  };
-  abrir($('#dlg-detalle'));
-}
-
-/* Aranceles */
-function abrirArancel(a) {
-  $('#form-arancel').dataset.id = a ? a.ID : '';
-  $('#ar-error').hidden = true;
-  $('#ar-titulo').textContent = a ? 'Editar arancel' : 'Nuevo arancel';
-  $('#ar_Concepto').value = a ? a.Concepto : '';
-  $('#ar_VB').value = a ? String(a.Valor_Beneficiario).replace('.', ',') : '';
-  $('#ar_VA').value = a ? String(a.Valor_Adulto).replace('.', ',') : '';
-  $('#ar_Fecha').value = a ? a.Fecha : new Date().toISOString().slice(0, 10);
-  $('#ar_Activo').value = a ? a.Activo : 'SI';
-  abrir($('#dlg-arancel'));
-}
-async function guardarArancel(e) {
-  e.preventDefault();
-  const err = $('#ar-error'); err.hidden = true;
-  const b = $('#ar-guardar'); b.disabled = true;
-  try {
-    await api('aranceles:guardar', { ID: $('#form-arancel').dataset.id, Concepto: $('#ar_Concepto').value, Valor_Beneficiario: $('#ar_VB').value,
-      Valor_Adulto: $('#ar_VA').value, Fecha: $('#ar_Fecha').value, Activo: $('#ar_Activo').value });
-    $('#dlg-arancel').close(); toast('Arancel guardado'); irA('finanzas');
-  } catch (er) { if (er.code === 'SESION') manejarError(er); else { err.textContent = er.message; err.hidden = false; } }
-  finally { b.disabled = false; }
-}
-
-/* Descuentos */
-async function poblarDestino(alcance, actual) {
-  const el = $('#ds_Destino');
-  $('#ds-destino-label').innerHTML = (alcance === 'Persona' ? 'Persona' : alcance === 'Rol' ? 'Rol' : 'Grupo scout') + ' <span class="req">*</span>';
-  if (alcance === 'Rol') {
-    el.innerHTML = '<option value="">Elegir rol…</option>' + S.roles.map(r => '<option value="' + esc(r.Nombre) + '">' + esc(r.Nombre) + ' (' + (r.Tipo === 'Adulto' ? 'adultos' : 'beneficiarios') + ')</option>').join('');
-  } else if (alcance === 'Grupo') {
-    el.innerHTML = '<option value="">Elegir grupo…</option>' + S.grupos.map(g => '<option value="' + esc(g.Nombre) + '">' + esc(g.Nombre) + '</option>').join('');
-  } else {
-    el.innerHTML = '<option value="">Cargando…</option>';
-    const l = (await cargarMiembros(true)).filter(m => m.Estado !== 'Inactivo' || m.ID === actual)
-      .sort((a, b) => (a.Apellidos + a.Nombres).localeCompare(b.Apellidos + b.Nombres, 'es'));
-    el.innerHTML = '<option value="">Elegir persona…</option>' + l.map(m => '<option value="' + esc(m.ID) + '">' + esc(m.Apellidos + ', ' + m.Nombres + (m.Grupo ? ' (' + m.Grupo + ')' : '')) + '</option>').join('');
-  }
-  el.value = actual || '';
-}
-function ayudaValorDesc() {
-  $('#ds-valor-ayuda').textContent = $('#ds_Tipo').value === 'Porcentaje' ? 'Entre 1 y 100. Por ejemplo, 50 para la mitad del arancel.' : 'Monto en pesos que se descuenta a cada persona. Usar coma para los centavos.';
-}
-async function abrirDescuento(x) {
-  $('#form-descuento').dataset.id = x ? x.ID : '';
-  $('#ds-error').hidden = true;
-  $('#ds-titulo').textContent = x ? 'Editar descuento' : 'Nuevo descuento';
-  $('#ds_Arancel').innerHTML = '<option value="">Todos los aranceles</option>' + FIN.aranceles.map(a => '<option value="' + esc(a.ID) + '">' + esc(a.Concepto) + '</option>').join('');
-  $('#ds_Arancel').value = x ? x.Arancel_ID : '';
-  $('#ds_Alcance').value = x ? x.Alcance : 'Persona';
-  $('#ds_Tipo').value = x ? x.Tipo_Desc : 'Porcentaje';
-  $('#ds_Valor').value = x ? String(x.Valor).replace('.', ',') : '';
-  $('#ds_Motivo').value = x ? x.Motivo : '';
-  ayudaValorDesc();
-  abrir($('#dlg-descuento'));
-  try { await poblarDestino($('#ds_Alcance').value, x ? x.Destino : ''); } catch (er) { manejarError(er); }
-}
-async function guardarDescuento(e) {
-  e.preventDefault();
-  const err = $('#ds-error'); err.hidden = true;
-  const b = $('#ds-guardar'); b.disabled = true;
-  try {
-    await api('descuentos:guardar', { ID: $('#form-descuento').dataset.id, Arancel_ID: $('#ds_Arancel').value, Alcance: $('#ds_Alcance').value,
-      Destino: $('#ds_Destino').value, Tipo_Desc: $('#ds_Tipo').value, Valor: $('#ds_Valor').value, Motivo: $('#ds_Motivo').value });
-    $('#dlg-descuento').close(); toast('Descuento guardado'); irA('finanzas');
-  } catch (er) { if (er.code === 'SESION') manejarError(er); else { err.textContent = er.message; err.hidden = false; } }
-  finally { b.disabled = false; }
-}
-
-/* ---------- Cambiar contraseña ---------- */
-let cambioObligatorio = false;
-function abrirCambioClave(obligatorio) {
-  cambioObligatorio = !!obligatorio;
-  ['#cc-actual', '#cc-nueva', '#cc-repetir'].forEach(s => { $(s).value = ''; });
-  $('#cc-error').hidden = true;
-  $('#cc-aviso').hidden = !obligatorio;
-  $('#cc-cancelar').hidden = !!obligatorio;
-  abrir($('#dlg-cambio'));
-}
-async function guardarClave(ev) {
-  ev.preventDefault();
-  const err = $('#cc-error'); err.hidden = true;
-  const nueva = $('#cc-nueva').value;
-  if (nueva !== $('#cc-repetir').value) { err.textContent = 'Las contraseñas nuevas no coinciden.'; err.hidden = false; return; }
-  const b = $('#cc-guardar'); b.disabled = true;
-  try {
-    await api('clave:cambiar', { actual: $('#cc-actual').value, nueva: nueva });
-    S.user.Cambiar_Clave = 'NO'; cambioObligatorio = false;
-    $('#dlg-cambio').close(); toast('Contraseña actualizada');
-    if (S.vista) irA(S.vista);
-  } catch (e) {
-    if (e.code === 'SESION') manejarError(e); else { err.textContent = e.message; err.hidden = false; }
-  } finally { b.disabled = false; }
-}
-
-/* ---------- Arranque ---------- */
-function iniciar() {
-  dibujarCurvas();
-  $$('[data-ico]').forEach(el => { el.innerHTML = ico(el.dataset.ico); });
-
-  $('#ver-clave').onclick = e => {
-    const i = $('#l-clave'), ver = i.type === 'password';
-    i.type = ver ? 'text' : 'password';
-    e.currentTarget.textContent = ver ? 'Ocultar' : 'Mostrar';
-    e.currentTarget.setAttribute('aria-pressed', ver ? 'true' : 'false');
-  };
-
-  $('#form-login').addEventListener('submit', e => {
-    e.preventDefault();
-    const err = $('#l-error'), b = $('#l-enviar');
-    err.hidden = true; b.disabled = true; b.textContent = 'Ingresando…';
-    const fin = () => { b.disabled = false; b.textContent = 'Ingresar'; };
-    google.script.run
-      .withSuccessHandler(r => {
-        fin();
-        if (!r || !r.ok) { err.textContent = (r && r.error) || 'No se pudo ingresar.'; err.hidden = false; return; }
-        S.token = r.token; almacen.set(r.token); $('#l-clave').value = '';
-        entrar(r.info);
-      })
-      .withFailureHandler(() => { fin(); err.textContent = 'No se pudo conectar con el servidor. Revisar la conexión e intentar de nuevo.'; err.hidden = false; })
-      .login($('#l-usuario').value, $('#l-clave').value);
-  });
-
-  $('#nav').addEventListener('click', e => { const b = e.target.closest('[data-vista]'); if (b) irA(b.dataset.vista); });
-  $('#btn-salir').onclick = salir; $('#btn-salir-m').onclick = salir;
-  $('#btn-clave').onclick = () => abrirCambioClave(false);
-  $('#btn-clave-m').onclick = () => abrirCambioClave(false);
-  $('#form-usuario').addEventListener('submit', guardarUsuario);
-  $('#form-evento').addEventListener('submit', guardarEvento);
-  $('#form-arancel').addEventListener('submit', guardarArancel);
-  $('#form-descuento').addEventListener('submit', guardarDescuento);
-  $('#ds_Alcance').addEventListener('change', e => { poblarDestino(e.target.value, '').catch(manejarError); });
-  $('#ds_Tipo').addEventListener('change', ayudaValorDesc);
-  $('#form-cambio').addEventListener('submit', guardarClave);
-  $('#k-copiar').onclick = copiarClave;
-  $('#dlg-cambio').addEventListener('cancel', e => { if (cambioObligatorio) e.preventDefault(); });
-
-  const t = almacen.get();
-  if (!t) { mostrarLogin(); return; }
-  S.token = t;
-  api('sesion').then(entrar).catch(() => { S.token = null; almacen.set(null); mostrarLogin(); });
-}
-
-document.addEventListener('DOMContentLoaded', iniciar);
-})();
-</script>
-</body>
+        <!-- Contact-->
+        <section class="page-section" id="contact">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Contactate con Nosotros</h2>
+                    <h3 class="section-subheading text-muted">Lorem ipsum dolor sit amet consectetur.</h3>
+                </div>
+                <!-- * * * * * * * * * * * * * * *-->
+                <!-- * * SB Forms Contact Form * *-->
+                <!-- * * * * * * * * * * * * * * *-->
+                <!-- This form is pre-integrated with SB Forms.-->
+                <!-- To make this form functional, sign up at-->
+                <!-- https://startbootstrap.com/solution/contact-forms-->
+                <!-- to get an API token!-->
+                <form id="contactForm" data-sb-form-api-token="API_TOKEN">
+                    <div class="row align-items-stretch mb-5">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <!-- Name input-->
+                                <input class="form-control" id="name" type="text" placeholder="Su Nombre *" data-sb-validations="required" />
+                                <div class="invalid-feedback" data-sb-feedback="name:required">A name is required.</div>
+                            </div>
+                            <div class="form-group">
+                                <!-- Email address input-->
+                                <input class="form-control" id="email" type="email" placeholder="Su Correo *" data-sb-validations="required,email" />
+                                <div class="invalid-feedback" data-sb-feedback="email:required">An email is required.</div>
+                                <div class="invalid-feedback" data-sb-feedback="email:email">Email is not valid.</div>
+                            </div>
+                            <div class="form-group mb-md-0">
+                                <!-- Phone number input-->
+                                <input class="form-control" id="phone" type="tel" placeholder="Your Celular *" data-sb-validations="required" />
+                                <div class="invalid-feedback" data-sb-feedback="phone:required">A phone number is required.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-group-textarea mb-md-0">
+                                <!-- Message input-->
+                                <textarea class="form-control" id="message" placeholder="Su Mensaje *" data-sb-validations="required"></textarea>
+                                <div class="invalid-feedback" data-sb-feedback="message:required">A message is required.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Submit success message-->
+                    <!---->
+                    <!-- This is what your users will see when the form-->
+                    <!-- has successfully submitted-->
+                    <div class="d-none" id="submitSuccessMessage">
+                        <div class="text-center text-white mb-3">
+                            <div class="fw-bolder">Form submission successful!</div>
+                            To activate this form, sign up at
+                            <br />
+                            <a href="https://startbootstrap.com/solution/contact-forms">https://startbootstrap.com/solution/contact-forms</a>
+                        </div>
+                    </div>
+                    <!-- Submit error message-->
+                    <!---->
+                    <!-- This is what your users will see when there is-->
+                    <!-- an error submitting the form-->
+                    <div class="d-none" id="submitErrorMessage"><div class="text-center text-danger mb-3">Error sending message!</div></div>
+                    <!-- Submit Button-->
+                    <div class="text-center"><button class="btn btn-primary btn-xl text-uppercase disabled" id="submitButton" type="submit">Enviar Mensaje</button></div>
+                </form>
+            </div>
+        </section>
+        <!-- Footer-->
+        <footer class="footer py-4">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-4 text-lg-start">Copyright &copy; Vicuña Amistosa 2026</div>
+                    <div class="col-lg-4 my-3 my-lg-0">
+                        <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                    <div class="col-lg-4 text-lg-end">
+                        <a class="link-dark text-decoration-none me-3" href="#!">Politica de Privacidad</a>
+                        <a class="link-dark text-decoration-none" href="#!">Terminos de Uso</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!-- Portfolio Modals-->
+        <!-- Portfolio item 1 modal popup-->
+        <div class="portfolio-modal modal fade" id="portfolioModal1" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="close-modal" data-bs-dismiss="modal"><img src="img/close-icon.svg" alt="Close modal" /></div>
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <div class="modal-body">
+                                    <!-- Project details-->
+                                    <h2 class="text-uppercase">Historia del Movimiento</h2>
+                                    <p class="item-intro text-muted">Lorem ipsum dolor sit amet consectetur.</p>
+                                    <img class="img-fluid d-block mx-auto" src="img/histo1.jpg" alt="..." />
+                                    <p>Use this area to describe your project. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Est blanditiis dolorem culpa incidunt minus dignissimos deserunt repellat aperiam quasi sunt officia expedita beatae cupiditate, maiores repudiandae, nostrum, reiciendis facere nemo!</p>
+                                    <ul class="list-inline">
+                                        <li>
+                                            <strong>Client:</strong>
+                                            Threads
+                                        </li>
+                                        <li>
+                                            <strong>Category:</strong>
+                                            Illustration
+                                        </li>
+                                    </ul>
+                                    <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                        <i class="fas fa-xmark me-1"></i>
+                                        Close Project
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Portfolio item 2 modal popup-->
+        <div class="portfolio-modal modal fade" id="portfolioModal2" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="close-modal" data-bs-dismiss="modal"><img src="img/close-icon.svg" alt="Close modal" /></div>
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <div class="modal-body">
+                                    <!-- Project details-->
+                                    <h2 class="text-uppercase">Dios, Patria y Hogar</h2>
+                                    <p class="item-intro text-muted">El mayor protege al menor</p>
+                                    <img class="img-fluid d-block mx-auto" src="img/siluetas1.jpg" alt="..." />
+                                    <p>Use this area to describe your project. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Est blanditiis dolorem culpa incidunt minus dignissimos deserunt repellat aperiam quasi sunt officia expedita beatae cupiditate, maiores repudiandae, nostrum, reiciendis facere nemo!</p>
+                                    <ul class="list-inline">
+                                        <li>
+                                            <strong>Client:</strong>
+                                            Explore
+                                        </li>
+                                        <li>
+                                            <strong>Category:</strong>
+                                            Graphic Design
+                                        </li>
+                                    </ul>
+                                    <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                        <i class="fas fa-xmark me-1"></i>
+                                        Close Project
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Portfolio item 3 modal popup-->
+        <div class="portfolio-modal modal fade" id="portfolioModal3" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="close-modal" data-bs-dismiss="modal"><img src="img/close-icon.svg" alt="Close modal" /></div>
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <div class="modal-body">
+                                    <!-- Project details-->
+                                    <h2 class="text-uppercase">Programa</h2>
+                                    <p class="item-intro text-muted">Lorem ipsum dolor sit amet consectetur.</p>
+                                    <img class="img-fluid d-block mx-auto" src="img/saludo1.png" alt="..." />
+                                    <p>Use this area to describe your project. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Est blanditiis dolorem culpa incidunt minus dignissimos deserunt repellat aperiam quasi sunt officia expedita beatae cupiditate, maiores repudiandae, nostrum, reiciendis facere nemo!</p>
+                                    <ul class="list-inline">
+                                        <li>
+                                            <strong>Client:</strong>
+                                            Finish
+                                        </li>
+                                        <li>
+                                            <strong>Category:</strong>
+                                            Identity
+                                        </li>
+                                    </ul>
+                                    <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                        <i class="fas fa-xmark me-1"></i>
+                                        Close Project
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Portfolio item 4 modal popup-->
+        <div class="portfolio-modal modal fade" id="portfolioModal4" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="close-modal" data-bs-dismiss="modal"><img src="img/close-icon.svg" alt="Close modal" /></div>
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <div class="modal-body">
+                                    <!-- Project details-->
+                                    <h2 class="text-uppercase">Metodo</h2>
+                                    <p class="item-intro text-muted">Lorem ipsum dolor sit amet consectetur.</p>
+                                    <img class="img-fluid d-block mx-auto" src="img/campa1.png" alt="..." />
+                                    <p>Use this area to describe your project. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Est blanditiis dolorem culpa incidunt minus dignissimos deserunt repellat aperiam quasi sunt officia expedita beatae cupiditate, maiores repudiandae, nostrum, reiciendis facere nemo!</p>
+                                    <ul class="list-inline">
+                                        <li>
+                                            <strong>Client:</strong>
+                                            Lines
+                                        </li>
+                                        <li>
+                                            <strong>Category:</strong>
+                                            Branding
+                                        </li>
+                                    </ul>
+                                    <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                        <i class="fas fa-xmark me-1"></i>
+                                        Close Project
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Portfolio item 5 modal popup-->
+        <div class="portfolio-modal modal fade" id="portfolioModal5" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="close-modal" data-bs-dismiss="modal"><img src="img/close-icon.svg" alt="Close modal" /></div>
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <div class="modal-body">
+                                    <!-- Project details-->
+                                    <h2 class="text-uppercase">Promesa</h2>
+                                    <p class="item-intro text-muted">Lorem ipsum dolor sit amet consectetur.</p>
+                                    <img class="img-fluid d-block mx-auto" src="img/promesa1.png" alt="..." />
+                                    <p>Use this area to describe your project. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Est blanditiis dolorem culpa incidunt minus dignissimos deserunt repellat aperiam quasi sunt officia expedita beatae cupiditate, maiores repudiandae, nostrum, reiciendis facere nemo!</p>
+                                    <ul class="list-inline">
+                                        <li>
+                                            <strong>Client:</strong>
+                                            Southwest
+                                        </li>
+                                        <li>
+                                            <strong>Category:</strong>
+                                            Website Design
+                                        </li>
+                                    </ul>
+                                    <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                        <i class="fas fa-xmark me-1"></i>
+                                        Close Project
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Portfolio item 6 modal popup-->
+        <div class="portfolio-modal modal fade" id="portfolioModal6" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="close-modal" data-bs-dismiss="modal"><img src="img/close-icon.svg" alt="Close modal" /></div>
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <div class="modal-body">
+                                    <!-- Project details-->
+                                    <h2 class="text-uppercase">Agente Pastoral</h2>
+                                    <p class="item-intro text-muted">Lorem ipsum dolor sit amet consectetur.</p>
+                                    <img class="img-fluid d-block mx-auto" src="img/vela1.png" alt="..." />
+                                    <p>Use this area to describe your project. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Est blanditiis dolorem culpa incidunt minus dignissimos deserunt repellat aperiam quasi sunt officia expedita beatae cupiditate, maiores repudiandae, nostrum, reiciendis facere nemo!</p>
+                                    <ul class="list-inline">
+                                        <li>
+                                            <strong>Client:</strong>
+                                            Window
+                                        </li>
+                                        <li>
+                                            <strong>Category:</strong>
+                                            Photography
+                                        </li>
+                                    </ul>
+                                    <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
+                                        <i class="fas fa-xmark me-1"></i>
+                                        Close Project
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+        <!--<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>-->
+        <!-- Core theme JS-->
+        <script src="js/scripts.js"></script>
+        <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
+        <!-- * *                               SB Forms JS                               * *-->
+        <!-- * * Activate your form at https://startbootstrap.com/solution/contact-forms * *-->
+        <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
+        <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
+    </body>
 </html>
